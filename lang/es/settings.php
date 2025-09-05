@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Configuración',
+    'subtitle' => 'Aquí puedes cambiar la configuración de tu cuenta.',
+    'appearance' => 'Apariencia',
+    'update_your_settings_appearance' => 'Actualiza la configuración de apariencia',
+    'light' => 'Claro',
+    'dark' => 'Oscuro',
+    'system' => 'Sistema',
+    'delete_account_title' => 'Eliminar cuenta',
+    'delete_account_subtitle' => 'Aquí puedes eliminar tu cuenta de forma permanente. Esta acción es irreversible y no se puede deshacer.',
+    'delete_are_you_sure' => '¿Estás seguro de que deseas eliminar tu cuenta?',
+    'delete_are_you_sure_text' => 'Una vez que tu cuenta sea eliminada, todos sus recursos y datos se borrarán de forma permanente. Por favor ingresa tu contraseña para confirmar que deseas eliminar tu cuenta de manera definitiva.',
+    'password' => 'Contraseña',
+    'update_password' => 'Actualizar contraseña',
+    'update_password_description' => 'Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerla segura.',
+    'current_password' => 'Contraseña actual',
+    'new_password' => 'Nueva contraseña',
+    'confirm_new_password' => 'Confirmar nueva contraseña',
+    'profile' => 'Cuenta',
+    'profile_description' => 'Actualiza la información de tu cuenta y tu correo electrónico.',
+    'your_email_is_unverified' => 'Tu correo electrónico no está verificado.',
+    'click_here_to_request_verify' => 'Haz clic aquí para solicitar un nuevo correo de verificación',
+    'verification_link_sent' => 'Se ha enviado un nuevo correo de verificación',
+];

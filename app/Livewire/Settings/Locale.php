@@ -18,7 +18,7 @@ class Locale extends Component
     public function updateLocale(): void
     {
         $this->validate([
-            'locale' => 'required|string|in:en,da',
+            'locale' => 'required|string|in:en,da,es',
         ]);
 
         auth()->user()->update([
@@ -35,6 +35,7 @@ class Locale extends Component
             'locales' => [
                 'en' => 'English',
                 'da' => 'Danish',
+                'es' => 'Español',
             ],
         ]);
     }
