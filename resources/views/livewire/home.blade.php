@@ -1,30 +1,35 @@
-<div class="max-w-5xl mx-auto py-16 px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-    {{-- Columna izquierda: TecNM arriba + Texto abajo --}}
-    <div class="flex flex-col items-center md:items-start gap-8">
-        {{-- Logo TecNM --}}
-        <div class="h-16 w-28 flex items-center justify-center">
-            <img src="{{ asset('logos/Logo-TecNM.png') }}" 
-                 alt="TecNM" 
-                 class="max-h-full max-w-full object-contain opacity-90">
-        </div>
+<div class="max-w-5xl mx-auto px-6 py-16">
+  <div class="relative overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5">
+    {{-- Imagen grande --}}
+    <img
+      src="{{ asset('logos/home.png') }}"
+      alt="Portada SGC ITTux"
+      class="block w-full h-[26rem] sm:h-[32rem] md:h-[38rem] lg:h-[42rem] object-cover"
+      loading="eager" decoding="async">
 
-        {{-- Texto de bienvenida --}}
-        <div class="text-center md:text-left">
-            <h1 class="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">
-                Bienvenidos al Sistema de Gestión de la Calidad
-            </h1>
-            <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
-                <span class="font-semibold">SGC del ITTux</span> · Instituto Tecnológico de Tuxtepec
-            </p>
-        </div>
-    </div>
+    {{-- Degradado superior para legibilidad --}}
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-transparent"></div>
 
-    {{-- Columna derecha: ITTux arriba --}}
-    <div class="flex flex-col items-center md:items-start">
-        <div class="flex items-center justify-center">
-            <img src="{{ asset('logos/Logo_ITTux.png') }}" 
-                 alt="ITTux" 
-                 class="h-12 w-auto object-contain opacity-90 scale-[.85]">
-        </div>
+    {{-- Texto dentro de la imagen (arriba) --}}
+    <div class="absolute top-0 left-0 right-0 p-6 sm:p-8 md:p-10">
+      <span class="inline-flex items-center gap-2 rounded-full px-3 py-1.5
+                   text-base sm:text-lg font-bold
+                   bg-white/85 text-zinc-900 shadow-sm backdrop-blur-sm
+                   dark:bg-zinc-900/70 dark:text-white">
+        SGC · ITTux
+      </span>
+
+      <span class="inline-flex items-center gap-2 rounded-full px-3 py-1.5
+                   text-base sm:text-lg font-bold
+                   bg-white/85 text-zinc-900 shadow-sm backdrop-blur-sm
+                   dark:bg-zinc-900/70 dark:text-white">
+            BIENVENIDOS AL SISTEMA DE GESTION DE LA CALIDAD 
+      </span>
+
+      <p class="mt-4 text-white/95 font-bold
+                text-2xl sm:text-3xl md:text-4xl">
+        Instituto Tecnológico de Tuxtepec
+      </p>
     </div>
+  </div>
 </div>
