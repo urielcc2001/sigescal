@@ -7,11 +7,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Layout;
-use App\Livewire\PageWithDashboard;   // 👈 IMPORTA LA BASE
-use Livewire\Component;
+use App\Livewire\PageWithDashboard;
 
-class Profile extends PageWithDashboard // 👈 hereda la base del dashboard
+class Profile extends PageWithDashboard
 {
     public string $name = '';
 

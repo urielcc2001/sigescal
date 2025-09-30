@@ -3,10 +3,9 @@
 namespace App\Livewire\Settings;
 
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
-use Livewire\Component;
+use App\Livewire\PageWithDashboard; 
 
-class Locale extends Component
+class Locale extends PageWithDashboard
 {
     public string $locale = '';
 

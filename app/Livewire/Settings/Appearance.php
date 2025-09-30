@@ -3,10 +3,9 @@
 namespace App\Livewire\Settings;
 
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
-use Livewire\Component;
+use App\Livewire\PageWithDashboard;
 
-class Appearance extends Component
+class Appearance extends PageWithDashboard 
 {
     #[Layout('components.layouts.app')]
     public function render(): View

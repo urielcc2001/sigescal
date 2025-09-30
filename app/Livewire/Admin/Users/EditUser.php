@@ -32,7 +32,6 @@ class EditUser extends Component
     /** @var array<int,string> */
     public array $userRoles = [];
 
-    // 👇 Nuevos campos para cambiar la contraseña (opcional)
     public string $new_password = '';
     public string $new_password_confirmation = '';
     public bool $passwordVisible = false;
