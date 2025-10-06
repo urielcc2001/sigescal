@@ -1,6 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Calidad\Solicitudes\RevisarSolicitudes;
+use App\Livewire\Calidad\Solicitudes\VerSolicitud;
+use App\Livewire\Calidad\Solicitudes\EstadoSolicitud;
+use App\Livewire\Calidad\Solicitudes\SolicitudesAprovadas; 
+use App\Livewire\Calidad\Solicitudes\SolicitudesRechazadas;
+use App\Http\Controllers\SolicitudPdfController;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
@@ -33,6 +39,37 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/permissions/create', \App\Livewire\Admin\Permissions\CreatePermission::class)->name('permissions.create')->middleware('can:create permissions');
         Route::get('/permissions/{permission}/edit', \App\Livewire\Admin\Permissions\EditPermission::class)->name('permissions.edit')->middleware('can:update permissions');
     });
+
+    //pdf
+    Route::get('calidad/solicitudes/estado/{solicitud}/formato.pdf', [SolicitudPdfController::class, 'download'])
+        ->whereNumber('solicitud')
+        ->name('calidad.solicitudes.estado.formato.pdf');
+
+    // Solicitudes 
+    Route::get('calidad/solicitudes/crear', \App\Livewire\Calidad\Solicitudes\CrearSolicitud::class)->name('calidad.solicitudes.crear');
+    
+    Route::get('calidad/solicitudes/estado', EstadoSolicitud::class)->name('calidad.solicitudes.estado');
+
+    Route::get('calidad/solicitudes/estado/{solicitud}', SolicitudesAprovadas::class)
+        ->whereNumber('solicitud')
+        ->name('calidad.solicitudes.estado.show');    
+    
+    // Solicitudes revision 
+    Route::get('calidad/solicitudes/revisar', RevisarSolicitudes::class)->name('calidad.solicitudes.revisar');    
+    
+    Route::get('calidad/solicitudes/revisar/{solicitud}', VerSolicitud::class)
+        ->whereNumber('solicitud')
+        ->name('calidad.solicitudes.revisar.show');
+    //Route::get('/calidad/solicitudes/{solicitud}', VerSolicitud::class)->name('calidad.solicitudes.show');
+    
+    Route::get('calidad/solicitudes/estado/{solicitud}/editar', SolicitudesRechazadas::class)
+        ->whereNumber('solicitud')
+        ->name('calidad.solicitudes.estado.edit');
+
+
+    //Lista Maestra 
+    Route::get('calidad/lista-maestra', \App\Livewire\Calidad\ListaMaestra\ListaMaestra::class)->name('calidad.lista-maestra.index');
+
 });
 
 require __DIR__.'/auth.php';

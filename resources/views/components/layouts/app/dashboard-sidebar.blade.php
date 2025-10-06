@@ -40,6 +40,45 @@
                 </flux:navlist.item> --}}
             </flux:navlist.group>
 
+            <flux:navlist.group heading="Solicitudes" class="grid">
+                <flux:navlist.item
+                    icon="plus-circle"
+                    href="{{ route('calidad.solicitudes.crear') }}"
+                    :current="request()->routeIs('calidad.solicitudes.crear')"
+                    wire:navigate>
+                    Crear solicitud
+                </flux:navlist.item>
+
+                <flux:navlist.item
+                    icon="list-bullet"
+                    href="{{ route('calidad.solicitudes.estado') }}"
+                    :current="request()->routeIs('calidad.solicitudes.estado')"
+                    wire:navigate>
+                    Estado de solicitudes
+                </flux:navlist.item>
+
+                <flux:navlist.item
+                    icon="check-circle"
+                    href="{{ route('calidad.solicitudes.revisar') }}"
+                    :current="request()->routeIs('calidad.solicitudes.revisar')"
+                    wire:navigate>
+                    Revisar solicitudes
+                </flux:navlist.item>
+
+            </flux:navlist.group>
+
+            <flux:navlist.group heading="Lista Maestra" class="grid">
+                <flux:navlist.item
+                    icon="book-open"
+                    href="{{ route('calidad.lista-maestra.index') }}"
+                    :current="request()->routeIs('calidad.lista-maestra.index')"
+                    wire:navigate>
+                    Ver lista maestra
+                </flux:navlist.item>
+            </flux:navlist.group>
+
+
+
             <flux:navlist.group heading="Cuenta" class="grid">
                 <flux:navlist.item icon="user"
                     href="/settings/profile"
