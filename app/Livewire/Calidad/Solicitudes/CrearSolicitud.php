@@ -6,12 +6,16 @@ use App\Livewire\PageWithDashboard;
 use App\Models\Area;
 use App\Models\ListaMaestra;
 use App\Models\Solicitud;
+use App\Models\SolicitudAdjunto;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Livewire\WithFileUploads;
 
 class CrearSolicitud extends PageWithDashboard
 {
+    use WithFileUploads;
+
     public string $codigo = '';
 
     public ?int $documento_id = null;
@@ -24,6 +28,10 @@ class CrearSolicitud extends PageWithDashboard
     public string $justificacion = '';
     public bool $requiere_capacitacion = false;
     public bool $requiere_difusion = true;
+
+    /** NUEVO: arrays de archivos por sección */
+    public array $imagenesDice = [];
+    public array $imagenesDebeDecir = [];
 
     // Catálogos
     public array $tipos = ['creacion', 'modificacion', 'baja'];
@@ -40,77 +48,123 @@ class CrearSolicitud extends PageWithDashboard
         $this->areas = Area::orderBy('nombre')->get(['id','nombre']);
     }
 
-    /**
-     * Al cambiar el documento, autocompleta el área (desde la lista maestra).
-     */
-
+    /** Autocompletar área al elegir código */
     public function updatedCodigo($value): void
     {
         $doc = $this->documentos->firstWhere('codigo', $value);
 
         if ($doc) {
             $this->documento_id = $doc->id;
-            $this->area_id = $doc->area_id;
+            $this->area_id      = $doc->area_id;
         } else {
-            // si no coincide con ningún documento conocido
             $this->documento_id = null;
-            $this->area_id = null;
+            $this->area_id      = null;
         }
     }
-
 
     protected function rules(): array
     {
         return [
-            'folio' => ['required','string','max:50'],
-            'fecha' => ['required','date'],
-            'documento_id' => ['nullable','exists:lista_maestra,id'],
-            'area_id' => ['nullable','exists:areas,id'],
-            'tipo' => ['required','in:creacion,modificacion,baja'],
-            'cambio_dice' => ['nullable','string'],
-            'cambio_debe_decir' => ['nullable','string'],
-            'justificacion' => ['required','string','min:5'],
+            'folio'                 => ['required','string','max:50'],
+            'fecha'                 => ['required','date'],
+            'documento_id'          => ['nullable','exists:lista_maestra,id'],
+            'area_id'               => ['nullable','exists:areas,id'],
+            'tipo'                  => ['required','in:creacion,modificacion,baja'],
+            'cambio_dice'           => ['nullable','string'],
+            'cambio_debe_decir'     => ['nullable','string'],
+            'justificacion'         => ['required','string','min:5'],
             'requiere_capacitacion' => ['boolean'],
-            'requiere_difusion' => ['boolean'],
+            'requiere_difusion'     => ['boolean'],
+
+            // archivos
+            'imagenesDice.*'        => ['image','max:2048'],       // 2 MB por imagen (ajusta)
+            'imagenesDebeDecir.*'   => ['image','max:2048'],
         ];
+    }
+
+    /** Quitar previews antes de guardar */
+    public function removeDice(int $index): void
+    {
+        unset($this->imagenesDice[$index]);
+        $this->imagenesDice = array_values($this->imagenesDice);
+    }
+    public function removeDebeDecir(int $index): void
+    {
+        unset($this->imagenesDebeDecir[$index]);
+        $this->imagenesDebeDecir = array_values($this->imagenesDebeDecir);
     }
 
     public function save()
     {
         $this->validate();
 
-        $solicitud = Solicitud::create([
-            'folio' => $this->folio,
-            'fecha' => $this->fecha,
-            'documento_id' => $this->documento_id,
-            'area_id' => $this->area_id ?? Auth::user()->area_id ?? null,
-            'user_id' => Auth::id(),
-            'tipo' => $this->tipo,
-            'cambio_dice' => $this->cambio_dice,
-            'cambio_debe_decir' => $this->cambio_debe_decir,
-            'justificacion' => $this->justificacion,
-            'requiere_capacitacion' => $this->requiere_capacitacion,
-            'requiere_difusion' => $this->requiere_difusion,
-            'estado' => 'en_revision',
-        ]);
+        DB::transaction(function () {
+            // 1) Crear la solicitud
+            $solicitud = Solicitud::create([
+                'folio'                 => $this->folio,
+                'fecha'                 => $this->fecha,
+                'documento_id'          => $this->documento_id,
+                'area_id'               => $this->area_id ?? (Auth::user()->area_id ?? null),
+                'user_id'               => Auth::id(),
+                'tipo'                  => $this->tipo,
+                'cambio_dice'           => $this->cambio_dice,
+                'cambio_debe_decir'     => $this->cambio_debe_decir,
+                'justificacion'         => $this->justificacion,
+                'requiere_capacitacion' => $this->requiere_capacitacion,
+                'requiere_difusion'     => $this->requiere_difusion,
+                'estado'                => 'en_revision',
+            ]);
 
-        // Generar nuevo folio para la siguiente captura
+            // 2) Guardar adjuntos de cada sección
+            $this->guardarAdjuntos($solicitud->id, 'cambio_dice', $this->imagenesDice);
+            $this->guardarAdjuntos($solicitud->id, 'cambio_debe_decir', $this->imagenesDebeDecir);
+        });
+
+        // 3) Reset para nueva captura
         $this->resetExcept(['documentos','areas','tipos']);
         $this->fecha = now()->toDateString();
         $this->folio = $this->generarFolio();
         $this->requiere_difusion = true;
 
-        session()->flash('success', 'Solicitud enviada correctamente (Folio: '.$solicitud->folio.')');
-        // Opcional: redirigir a listado/estado
+        session()->flash('success', 'Solicitud enviada correctamente.');
         return redirect()->route('calidad.solicitudes.estado');
+    }
+
+    private function guardarAdjuntos(int $solicitudId, string $seccion, array $files): void
+    {
+        foreach ($files as $i => $file) {
+            // guardar archivo en /storage/app/public/solicitudes/{id}/{seccion}
+            $path = $file->storePublicly("solicitudes/{$solicitudId}/{$seccion}", 'public');
+
+            // metadatos
+            $original = $file->getClientOriginalName();
+            $mime     = $file->getMimeType();
+            $size     = $file->getSize();
+            $width = $height = null;
+            try {
+                [$width, $height] = getimagesize($file->getRealPath()) ?: [null, null];
+            } catch (\Throwable $e) {}
+
+            SolicitudAdjunto::create([
+                'solicitud_id' => $solicitudId,
+                'seccion'      => $seccion, // 'cambio_dice' | 'cambio_debe_decir'
+                'path'         => $path,
+                'disk'         => 'public',
+                'original_name'=> $original,
+                'mime'         => $mime,
+                'size'         => $size,
+                'width'        => $width,
+                'height'       => $height,
+                'orden'        => $i,
+            ]);
+        }
     }
 
     private function generarFolio(): string
     {
-        // Ejemplo: SGC-2025-0001 (incremental por año)
-        $año = now()->year;
-        $consecutivo = (int) Solicitud::whereYear('fecha', $año)->count() + 1;
-        return sprintf('SGC-%d-%04d', $año, $consecutivo);
+        $anio = now()->year;
+        $consecutivo = (int) Solicitud::whereYear('fecha', $anio)->count() + 1;
+        return sprintf('SGC-%d-%04d', $anio, $consecutivo);
     }
 
     public function render(): View

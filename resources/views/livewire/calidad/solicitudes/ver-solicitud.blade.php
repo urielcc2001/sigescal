@@ -81,20 +81,53 @@
         </div>
 
         {{-- Bloque: Descripción del cambio --}}
+        @php
+            use Illuminate\Support\Facades\Storage;
+        @endphp
+
+        {{-- Bloque: Descripción del cambio --}}
         <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
             <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL CAMBIO</div>
 
-            <div class="space-y-4">
+            <div class="space-y-6">
+                {{-- DICE --}}
                 <div>
                     <label class="block text-sm font-medium">Dice</label>
                     <textarea rows="8" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                              readonly>{{ $solicitud->cambio_dice }}</textarea>
+                            readonly>{{ $solicitud->cambio_dice }}</textarea>
+
+                    @if($solicitud->imagenesDice?->count())
+                        <div class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            @foreach($solicitud->imagenesDice as $img)
+                                @php $url = Storage::disk($img->disk)->url($img->path); @endphp
+                                <a href="{{ $url }}" target="_blank" class="group block">
+                                    <img src="{{ $url }}" loading="lazy"
+                                        class="h-28 w-full object-cover rounded-md border border-zinc-200 dark:border-zinc-700 group-hover:opacity-90" />
+                                    <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ $img->original_name }}</div>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
+                {{-- DEBE DECIR --}}
                 <div>
                     <label class="block text-sm font-medium">Debe decir</label>
                     <textarea rows="8" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                              readonly>{{ $solicitud->cambio_debe_decir }}</textarea>
+                            readonly>{{ $solicitud->cambio_debe_decir }}</textarea>
+
+                    @if($solicitud->imagenesDebeDecir?->count())
+                        <div class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            @foreach($solicitud->imagenesDebeDecir as $img)
+                                @php $url = Storage::disk($img->disk)->url($img->path); @endphp
+                                <a href="{{ $url }}" target="_blank" class="group block">
+                                    <img src="{{ $url }}" loading="lazy"
+                                        class="h-28 w-full object-cover rounded-md border border-zinc-200 dark:border-zinc-700 group-hover:opacity-90" />
+                                    <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ $img->original_name }}</div>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

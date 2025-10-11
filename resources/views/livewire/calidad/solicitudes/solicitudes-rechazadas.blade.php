@@ -106,21 +106,181 @@
             </div>
         </div>
 
+        @php use Illuminate\Support\Facades\Storage; @endphp
+
         {{-- Bloque: Descripción del cambio --}}
         <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
             <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL CAMBIO</div>
-            <div class="space-y-4">
+
+            <div class="space-y-8">
+                {{-- ========== DICE ========== --}}
                 <div>
                     <label class="block text-sm font-medium">Dice</label>
                     <textarea rows="8" class="mt-1 w-full rounded-md border p-2"
-                              wire:model.defer="cambio_dice"></textarea>
+                            wire:model.defer="cambio_dice"></textarea>
                     @error('cambio_dice') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+
+                    {{-- Acciones de imágenes --}}
+                    <div class="mt-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                                Agregar imágenes (opcional)
+                            </span>
+
+                            {{-- Botón con ícono para adjuntar --}}
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                <input type="file" accept="image/*" multiple wire:model="imagenesDice" class="hidden">
+                                <span class="inline-flex items-center justify-center rounded-md border
+                                            border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium
+                                            text-zinc-700 shadow-sm hover:bg-zinc-50
+                                            dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
+                                    {{-- Ícono imagen --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 12.5l2.5 3 3.5-4.5L20 17H4l4.5-4.5Z"/>
+                                        <circle cx="8" cy="7.5" r="1"/>
+                                    </svg>
+                                    Adjuntar
+                                </span>
+                            </label>
+                        </div>
+
+                        @error('imagenesDice.*') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+
+                        {{-- Previews NUEVAS (temporal) --}}
+                        @if(!empty($imagenesDice))
+                            <div class="mt-2 flex flex-wrap gap-3">
+                                @foreach($imagenesDice as $idx => $img)
+                                    <div class="relative">
+                                        <img src="{{ $img->temporaryUrl() }}"
+                                            class="h-24 w-24 object-cover rounded-md border dark:border-zinc-700">
+                                        {{-- Quitar temporal --}}
+                                        <button type="button" wire:click="removeDice({{ $idx }})"
+                                                class="absolute -top-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full
+                                                    border shadow-lg ring-1
+                                                    bg-white text-red-600 border-red-500 ring-black/10
+                                                    dark:bg-red-600 dark:text-white dark:border-red-600 dark:ring-zinc-900
+                                                    hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/30"
+                                                aria-label="Quitar imagen">
+                                            {{-- basurero --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M9 3a1 1 0 0 0-1 1v1H5.5a1 1 0 1 0 0 2H6v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7h.5a1 1 0 1 0 0-2H16V4a1 1 0 0 0-1-1H9Zm2 2h2V5h-2V5Zm-3 4h8v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9Zm2 2a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Zm4 0a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        {{-- Galería EXISTENTE (desde BD) --}}
+                        @if(!empty($adjuntosDice))
+                            <div class="mt-3">
+                                <div class="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Imágenes existentes</div>
+                                <div class="flex flex-wrap gap-3">
+                                    @foreach($adjuntosDice as $adj)
+                                        @php $url = Storage::disk($adj->disk)->url($adj->path); @endphp
+                                        <div class="relative">
+                                            <img src="{{ $url }}" class="h-24 w-24 object-cover rounded-md border dark:border-zinc-700">
+                                            {{-- Eliminar adjunto existente --}}
+                                            <button type="button" wire:click="deleteAdjunto({{ $adj->id }})"
+                                                    class="absolute -top-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full
+                                                        border shadow-lg ring-1
+                                                        bg-white text-red-600 border-red-500 ring-black/10
+                                                        dark:bg-red-600 dark:text-white dark:border-red-600 dark:ring-zinc-900
+                                                        hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/30"
+                                                    aria-label="Eliminar imagen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M9 3a1 1 0 0 0-1 1v1H5.5a1 1 0 1 0 0 2H6v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7h.5a1 1 0 1 0 0-2H16V4a1 1 0 0 0-1-1H9Zm2 2h2V5h-2V5Zm-3 4h8v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9Zm2 2a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Zm4 0a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
+
+                {{-- ========== DEBE DECIR ========== --}}
                 <div>
                     <label class="block text-sm font-medium">Debe decir</label>
                     <textarea rows="8" class="mt-1 w-full rounded-md border p-2"
-                              wire:model.defer="cambio_debe_decir"></textarea>
+                            wire:model.defer="cambio_debe_decir"></textarea>
                     @error('cambio_debe_decir') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+
+                    <div class="mt-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                                Agregar imágenes (opcional)
+                            </span>
+
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                <input type="file" accept="image/*" multiple wire:model="imagenesDebeDecir" class="hidden">
+                                <span class="inline-flex items-center justify-center rounded-md border
+                                            border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium
+                                            text-zinc-700 shadow-sm hover:bg-zinc-50
+                                            dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 12.5l2.5 3 3.5-4.5L20 17H4l4.5-4.5Z"/>
+                                        <circle cx="8" cy="7.5" r="1"/>
+                                    </svg>
+                                    Adjuntar
+                                </span>
+                            </label>
+                        </div>
+
+                        @error('imagenesDebeDecir.*') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+
+                        {{-- Previews NUEVAS --}}
+                        @if(!empty($imagenesDebeDecir))
+                            <div class="mt-2 flex flex-wrap gap-3">
+                                @foreach($imagenesDebeDecir as $idx => $img)
+                                    <div class="relative">
+                                        <img src="{{ $img->temporaryUrl() }}"
+                                            class="h-24 w-24 object-cover rounded-md border dark:border-zinc-700">
+                                        <button type="button" wire:click="removeDebeDecir({{ $idx }})"
+                                                class="absolute -top-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full
+                                                    border shadow-lg ring-1
+                                                    bg-white text-red-600 border-red-500 ring-black/10
+                                                    dark:bg-red-600 dark:text-white dark:border-red-600 dark:ring-zinc-900
+                                                    hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/30"
+                                                aria-label="Quitar imagen">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M9 3a1 1 0 0 0-1 1v1H5.5a1 1 0 1 0 0 2H6v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7h.5a1 1 0 1 0 0-2H16V4a1 1 0 0 0-1-1H9Zm2 2h2V5h-2V5Zm-3 4h8v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9Zm2 2a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Zm4 0a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        {{-- Galería EXISTENTE --}}
+                        @if(!empty($adjuntosDebeDecir))
+                            <div class="mt-3">
+                                <div class="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Imágenes existentes</div>
+                                <div class="flex flex-wrap gap-3">
+                                    @foreach($adjuntosDebeDecir as $adj)
+                                        @php $url = Storage::disk($adj->disk)->url($adj->path); @endphp
+                                        <div class="relative">
+                                            <img src="{{ $url }}" class="h-24 w-24 object-cover rounded-md border dark:border-zinc-700">
+                                            <button type="button" wire:click="deleteAdjunto({{ $adj->id }})"
+                                                    class="absolute -top-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full
+                                                        border shadow-lg ring-1
+                                                        bg-white text-red-600 border-red-500 ring-black/10
+                                                        dark:bg-red-600 dark:text-white dark:border-red-600 dark:ring-zinc-900
+                                                        hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/30"
+                                                    aria-label="Eliminar imagen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M9 3a1 1 0 0 0-1 1v1H5.5a1 1 0 1 0 0 2H6v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7h.5a1 1 0 1 0 0-2H16V4a1 1 0 0 0-1-1H9Zm2 2h2V5h-2V5Zm-3 4h8v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9Zm2 2a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Zm4 0a1 1 0 1 1 2 0v6a1 1 0 1 1-2 0v-6Z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

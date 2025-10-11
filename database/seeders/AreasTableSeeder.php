@@ -20,6 +20,7 @@ class AreasTableSeeder extends Seeder
             ['codigo' => 'VI', 'nombre' => 'Vinculación'],
             ['codigo' => 'EG', 'nombre' => 'Egreso'],
             ['codigo' => 'AD', 'nombre' => 'Administración de los Recursos'],
+            ['codigo' => 'PL', 'nombre' => 'Planeación'],
         ];
 
         foreach ($areas as $area) {

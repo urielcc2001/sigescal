@@ -52,4 +52,19 @@ class Solicitud extends Model
         return $this->hasMany(Historial::class, 'solicitud_id')->latest();
     }
 
+    public function adjuntos()
+    {
+        return $this->hasMany(SolicitudAdjunto::class);
+    }
+
+    public function imagenesDice()
+    {
+        return $this->hasMany(SolicitudAdjunto::class)->where('seccion', 'cambio_dice')->orderBy('orden');
+    }
+
+    public function imagenesDebeDecir()
+    {
+        return $this->hasMany(SolicitudAdjunto::class)->where('seccion', 'cambio_debe_decir')->orderBy('orden');
+    }
+
 }

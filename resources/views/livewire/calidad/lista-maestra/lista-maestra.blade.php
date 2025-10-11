@@ -44,6 +44,12 @@
                     <option value="{{ $a->id }}">{{ $a->nombre }}</option>
                 @endforeach
             </select>
+            <a href="{{ route('calidad.lista-maestra.pdf', ['areaId' => $areaId, 'search' => $search]) }}"
+            target="_blank"
+            class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold
+                    text-white bg-blue-600 hover:bg-blue-700">
+                Descargar PDF
+            </a>
         </div>
     </div>
 

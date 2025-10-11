@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 
 class VerSolicitud extends PageWithDashboard
 {
-    public Solicitud $solicitud;
+    public ?Solicitud $solicitud = null;
 
     // Modales
     public bool $showApproveModal = false;
@@ -23,11 +23,14 @@ class VerSolicitud extends PageWithDashboard
 
     public function mount(Solicitud $solicitud)
     {
-        $this->solicitud->load([
+        $this->solicitud = $solicitud->load([
             'usuario:id,name',
             'area:id,nombre',
             'documento:id,codigo,nombre,revision,fecha_autorizacion',
             'historial.usuario:id,name',
+            // nuevas relaciones para mostrar imágenes
+            'imagenesDice',
+            'imagenesDebeDecir',
         ]);
     }
 

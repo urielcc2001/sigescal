@@ -7,6 +7,7 @@ use App\Livewire\Calidad\Solicitudes\EstadoSolicitud;
 use App\Livewire\Calidad\Solicitudes\SolicitudesAprovadas; 
 use App\Livewire\Calidad\Solicitudes\SolicitudesRechazadas;
 use App\Http\Controllers\SolicitudPdfController;
+use App\Http\Controllers\ListaMaestraPdfController;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
@@ -40,10 +41,13 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/permissions/{permission}/edit', \App\Livewire\Admin\Permissions\EditPermission::class)->name('permissions.edit')->middleware('can:update permissions');
     });
 
-    //pdf
+    //pdf´s
     Route::get('calidad/solicitudes/estado/{solicitud}/formato.pdf', [SolicitudPdfController::class, 'download'])
         ->whereNumber('solicitud')
         ->name('calidad.solicitudes.estado.formato.pdf');
+
+    Route::get('calidad/lista-maestra/pdf', [ListaMaestraPdfController::class, 'download'])
+        ->name('calidad.lista-maestra.pdf');
 
     // Solicitudes 
     Route::get('calidad/solicitudes/crear', \App\Livewire\Calidad\Solicitudes\CrearSolicitud::class)->name('calidad.solicitudes.crear');

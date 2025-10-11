@@ -9,15 +9,18 @@ use Livewire\Attributes\Layout;
 
 class SolicitudesAprovadas extends PageWithDashboard
 {
-    public Solicitud $solicitud;
+    public ?Solicitud $solicitud = null; // opcional: nullable para evitar warnings
 
     public function mount(Solicitud $solicitud): void
     {
         // Carga de relaciones para mostrar datos
-        $this->solicitud->load([
+        $this->solicitud = $solicitud->load([
             'usuario:id,name',
             'area:id,nombre',
             'documento:id,codigo,nombre,revision,fecha_autorizacion',
+            // nuevas relaciones para mostrar imágenes
+            'imagenesDice',
+            'imagenesDebeDecir',
         ]);
     }
 

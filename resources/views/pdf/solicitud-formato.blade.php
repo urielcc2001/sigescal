@@ -96,6 +96,18 @@
         .foot-img   { height: 40px; }
         .foot-text  { text-align: center; font-size: 9px; color: #333; margin-top: 6px; }
         .tec-sub    { font-size: 9px; margin-top: 2px; }
+
+        /* que el recuadro pueda contener texto e imágenes sin salirse */
+        .textarea-box { border: 1.2px solid #000; padding: 8px; page-break-inside: avoid; }
+
+        /* cuadricula de imágenes dentro del recuadro */
+        .img-grid { width: 100%; margin-top: 6px; border-collapse: collapse; }
+        .img-grid td { width: 33%; padding: 4px; text-align: center; vertical-align: top; }
+
+        /* imagen y caption con tamaños estables para DomPDF */
+        .img-in-box { max-width: 170px; max-height: 170px; object-fit: contain; border: 1px solid #ddd; padding: 2px; }
+        .img-caption { margin-top: 3px; font-size: 9px; color: #555; word-break: break-all; }
+        .img-missing { font-size: 9px; color: #a00; }
     </style>
 </head>
 <body>
@@ -217,11 +229,61 @@
     {{-- DESCRIPCIÓN DEL CAMBIO (DICE arriba / DEBE DECIR abajo) --}}
     <div class="upper lbl mt-4 mb-1">DESCRIPCIÓN DEL CAMBIO:</div>
 
+    {{-- === DICE === --}}
     <div class="lbl mb-1">Dice:</div>
-    <div class="textarea-box" style="white-space:pre-line;">{{ $solicitud->cambio_dice }}</div>
+    <div class="textarea-box">
+        <div style="white-space:pre-line;">
+            {{ $solicitud->cambio_dice }}
+        </div>
 
+        @if(!empty($diceImgs))
+            <table class="img-grid">
+                <tr>
+                    @foreach($diceImgs as $i => $img)
+                        <td>
+                            @if(is_file($img['abs_path']))
+                                <img src="{{ $img['abs_path'] }}" class="img-in-box">
+                                <div class="img-caption">{{ $img['name'] }}</div>
+                            @else
+                                <div class="img-missing">Imagen no disponible</div>
+                            @endif
+                        </td>
+                        @if(($i+1) % 3 === 0)
+                            </tr><tr>
+                        @endif
+                    @endforeach
+                </tr>
+            </table>
+        @endif
+    </div>
+
+    {{-- === DEBE DECIR === --}}
     <div class="lbl mt-3 mb-1">Debe decir:</div>
-    <div class="textarea-box" style="white-space:pre-line;">{{ $solicitud->cambio_debe_decir }}</div>
+    <div class="textarea-box">
+        <div style="white-space:pre-line;">
+            {{ $solicitud->cambio_debe_decir }}
+        </div>
+
+        @if(!empty($debeImgs))
+            <table class="img-grid">
+                <tr>
+                    @foreach($debeImgs as $i => $img)
+                        <td>
+                            @if(is_file($img['abs_path']))
+                                <img src="{{ $img['abs_path'] }}" class="img-in-box">
+                                <div class="img-caption">{{ $img['name'] }}</div>
+                            @else
+                                <div class="img-missing">Imagen no disponible</div>
+                            @endif
+                        </td>
+                        @if(($i+1) % 3 === 0)
+                            </tr><tr>
+                        @endif
+                    @endforeach
+                </tr>
+            </table>
+        @endif
+    </div>
 
     {{-- JUSTIFICACIÓN --}}
     <div class="upper lbl mt-4 mb-1">JUSTIFICACIÓN DE LA SOLICITUD:</div>
