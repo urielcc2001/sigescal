@@ -7,7 +7,6 @@ use App\Models\Area;
 use App\Models\ListaMaestra as ListaMaestraModel;
 use Illuminate\Contracts\View\View;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\DB;
 
 class ListaMaestra extends PageWithDashboard

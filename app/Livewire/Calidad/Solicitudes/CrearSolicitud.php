@@ -28,6 +28,8 @@ class CrearSolicitud extends PageWithDashboard
     public string $justificacion = '';
     public bool $requiere_capacitacion = false;
     public bool $requiere_difusion = true;
+    public bool $showConfirm = false;
+
 
     /** NUEVO: arrays de archivos por sección */
     public array $imagenesDice = [];
@@ -92,6 +94,11 @@ class CrearSolicitud extends PageWithDashboard
     {
         unset($this->imagenesDebeDecir[$index]);
         $this->imagenesDebeDecir = array_values($this->imagenesDebeDecir);
+    }
+    
+    public function openConfirm(): void
+    {
+        $this->showConfirm = true;
     }
 
     public function save()

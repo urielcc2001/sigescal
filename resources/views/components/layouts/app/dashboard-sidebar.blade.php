@@ -77,6 +77,16 @@
                 </flux:navlist.item>
             </flux:navlist.group>
 
+            <flux:navlist.group heading="Organización" class="grid">
+                <flux:navlist.item
+                    icon="users"
+                    href="{{ route('calidad.organizacion.personal') }}"
+                    :current="request()->routeIs('calidad.organizacion.personal')"
+                    wire:navigate
+                >
+                    Personal
+                </flux:navlist.item>
+            </flux:navlist.group>
 
 
             <flux:navlist.group heading="Cuenta" class="grid">

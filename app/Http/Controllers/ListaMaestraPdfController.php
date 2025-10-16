@@ -24,7 +24,7 @@ class ListaMaestraPdfController extends Controller
             ->when($search !== '', fn($q) => $q->where(fn($qq) =>
                 $qq->where('codigo', $likeOp, $needle)->orWhere('nombre', $likeOp, $needle)
             ))
-            ->orderBy('codigo')
+            ->orderBy('id','asc')
             ->get();
 
         // Fecha de actualización: el máximo de fecha_autorizacion o hoy si no hay

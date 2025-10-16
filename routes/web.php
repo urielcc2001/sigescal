@@ -8,6 +8,7 @@ use App\Livewire\Calidad\Solicitudes\SolicitudesAprovadas;
 use App\Livewire\Calidad\Solicitudes\SolicitudesRechazadas;
 use App\Http\Controllers\SolicitudPdfController;
 use App\Http\Controllers\ListaMaestraPdfController;
+use App\Livewire\Calidad\Organizacion\Personal;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
@@ -73,6 +74,8 @@ Route::middleware(['auth'])->group(function (): void {
 
     //Lista Maestra 
     Route::get('calidad/lista-maestra', \App\Livewire\Calidad\ListaMaestra\ListaMaestra::class)->name('calidad.lista-maestra.index');
+
+    Route::get('calidad/organizacion/personal', \App\Livewire\Calidad\Organizacion\Personal::class)->name('calidad.organizacion.personal');
 
 });
 

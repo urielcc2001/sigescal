@@ -269,33 +269,44 @@
         </div>
     </div>
 
-    {{-- Botón enviar --}}
-{{-- Botón Enviar Solicitud (centrado y visible en ambos modos) --}}
-<div class="pt-6 flex justify-center">
-    <button
-        type="button"
-        wire:click="save"
-        wire:loading.attr="disabled"
-        class="inline-flex items-center gap-2 rounded-md px-6 py-2.5 text-sm font-semibold 
-               text-white bg-blue-600 hover:bg-blue-700 focus:outline-none 
-               focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-300 
-               transition shadow-md active:scale-[0.98]"
-        style="background-color:#2563eb;color:#fff;">
-        
-        {{-- Icono Guardar (SVG) --}}
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             stroke-width="2" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M17 16v-5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v5m10 0H7m10 0a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2" />
-        </svg>
+    {{-- Botón centrado que abre el modal --}}
+    <div class="flex justify-center pt-6">
+        <flux:button variant="primary" icon="paper-airplane" wire:click="$set('showConfirm', true)">
+            Enviar solicitud
+        </flux:button>
+    </div>
 
-        Enviar solicitud
-    </button>
+    {{-- Modal (patrón que ya te funciona) --}}
+    <flux:modal wire:model="showConfirm" title="Confirmar envío" icon="question-mark-circle" size="md">
+        <div class="space-y-3">
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">
+                ¿Deseas enviar la solicitud ahora?
+            </p>
 
-    <span class="ml-3 text-sm text-gray-600 dark:text-gray-400" wire:loading>
-        Guardando…
-    </span>
-</div>
+            {{-- (Opcional) resumen breve de lo que se enviará --}}
+            {{-- <div class="rounded-md border p-3 text-xs dark:border-zinc-700">
+                <div><span class="font-medium">Folio:</span> {{ $solicitud->folio }}</div>
+                <div><span class="font-medium">Documento:</span> {{ $docSel?->codigo }} — {{ $docSel?->nombre }}</div>
+            </div> --}}
+
+            <div class="mt-2 flex justify-end gap-2">
+                <flux:button type="button" variant="ghost" wire:click="$set('showConfirm', false)">
+                    Cancelar
+                </flux:button>
+
+                <flux:button
+                    type="button"
+                    variant="primary"
+                    icon="check-circle"
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    class="!bg-blue-600 hover:!bg-blue-700 !text-white"
+                >
+                    Sí, enviar
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 
 
 </div>
