@@ -42,41 +42,53 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('/permissions/{permission}/edit', \App\Livewire\Admin\Permissions\EditPermission::class)->name('permissions.edit')->middleware('can:update permissions');
     });
 
-    //pdf´s
+ // ==== PDFs ====
     Route::get('calidad/solicitudes/estado/{solicitud}/formato.pdf', [SolicitudPdfController::class, 'download'])
         ->whereNumber('solicitud')
+        ->middleware('can:solicitudes.export')
         ->name('calidad.solicitudes.estado.formato.pdf');
 
     Route::get('calidad/lista-maestra/pdf', [ListaMaestraPdfController::class, 'download'])
+        ->middleware('can:lista-maestra.export')
         ->name('calidad.lista-maestra.pdf');
 
-    // Solicitudes 
-    Route::get('calidad/solicitudes/crear', \App\Livewire\Calidad\Solicitudes\CrearSolicitud::class)->name('calidad.solicitudes.crear');
+    // ==== Solicitudes ====
+    Route::get('calidad/solicitudes/crear', \App\Livewire\Calidad\Solicitudes\CrearSolicitud::class)
+        ->middleware('can:solicitudes.create')
+        ->name('calidad.solicitudes.crear');
     
-    Route::get('calidad/solicitudes/estado', EstadoSolicitud::class)->name('calidad.solicitudes.estado');
+    Route::get('calidad/solicitudes/estado', EstadoSolicitud::class)
+        ->middleware('can:solicitudes.view')
+        ->name('calidad.solicitudes.estado');
 
     Route::get('calidad/solicitudes/estado/{solicitud}', SolicitudesAprovadas::class)
         ->whereNumber('solicitud')
+        ->middleware('can:solicitudes.view')
         ->name('calidad.solicitudes.estado.show');    
     
-    // Solicitudes revision 
-    Route::get('calidad/solicitudes/revisar', RevisarSolicitudes::class)->name('calidad.solicitudes.revisar');    
+    Route::get('calidad/solicitudes/revisar', RevisarSolicitudes::class)
+        ->middleware('can:solicitudes.review')
+        ->name('calidad.solicitudes.revisar');    
     
     Route::get('calidad/solicitudes/revisar/{solicitud}', VerSolicitud::class)
         ->whereNumber('solicitud')
+        ->middleware('can:solicitudes.review')
         ->name('calidad.solicitudes.revisar.show');
-    //Route::get('/calidad/solicitudes/{solicitud}', VerSolicitud::class)->name('calidad.solicitudes.show');
-    
+
     Route::get('calidad/solicitudes/estado/{solicitud}/editar', SolicitudesRechazadas::class)
         ->whereNumber('solicitud')
+        ->middleware('can:solicitudes.edit')
         ->name('calidad.solicitudes.estado.edit');
 
+    // ==== Lista Maestra ====
+    Route::get('calidad/lista-maestra', \App\Livewire\Calidad\ListaMaestra\ListaMaestra::class)
+        ->middleware('can:lista-maestra.view')
+        ->name('calidad.lista-maestra.index');
 
-    //Lista Maestra 
-    Route::get('calidad/lista-maestra', \App\Livewire\Calidad\ListaMaestra\ListaMaestra::class)->name('calidad.lista-maestra.index');
-
-    Route::get('calidad/organizacion/personal', \App\Livewire\Calidad\Organizacion\Personal::class)->name('calidad.organizacion.personal');
-
+    // ==== Organización / Personal ====
+    Route::get('calidad/organizacion/personal', \App\Livewire\Calidad\Organizacion\Personal::class)
+        ->middleware('can:org.personal.view')
+        ->name('calidad.organizacion.personal');
 });
 
 require __DIR__.'/auth.php';

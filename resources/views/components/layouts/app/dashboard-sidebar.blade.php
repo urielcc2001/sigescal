@@ -24,79 +24,96 @@
         </div>
 
         <flux:navlist variant="outline">
+
+            {{-- PANEL --}}
             <flux:navlist.group heading="Panel" class="grid">
-                <flux:navlist.item icon="home"
+                <flux:navlist.item
+                    icon="home"
                     :href="route('dashboard')"
                     :current="request()->routeIs('dashboard')"
                     wire:navigate>
                     Inicio
                 </flux:navlist.item>
-                {{-- Más secciones... --}}
-                {{-- <flux:navlist.item icon="folder"
-                    :href="route('dashboard.documentos')"
-                    :current="request()->routeIs('dashboard.documentos')"
-                    wire:navigate>
-                    Documentos
-                </flux:navlist.item> --}}
             </flux:navlist.group>
 
-            <flux:navlist.group heading="Solicitudes" class="grid">
-                <flux:navlist.item
-                    icon="plus-circle"
-                    href="{{ route('calidad.solicitudes.crear') }}"
-                    :current="request()->routeIs('calidad.solicitudes.crear')"
-                    wire:navigate>
-                    Crear solicitud
-                </flux:navlist.item>
+            {{-- SOLICITUDES --}}
+            @canany(['solicitudes.create','solicitudes.view','solicitudes.review'])
+                <flux:navlist.group heading="Solicitudes" class="grid">
 
-                <flux:navlist.item
-                    icon="list-bullet"
-                    href="{{ route('calidad.solicitudes.estado') }}"
-                    :current="request()->routeIs('calidad.solicitudes.estado')"
-                    wire:navigate>
-                    Estado de solicitudes
-                </flux:navlist.item>
+                    @can('solicitudes.create')
+                        <flux:navlist.item
+                            icon="plus-circle"
+                            href="{{ route('calidad.solicitudes.crear') }}"
+                            :current="request()->routeIs('calidad.solicitudes.crear')"
+                            wire:navigate>
+                            Crear solicitud
+                        </flux:navlist.item>
+                    @endcan
 
-                <flux:navlist.item
-                    icon="check-circle"
-                    href="{{ route('calidad.solicitudes.revisar') }}"
-                    :current="request()->routeIs('calidad.solicitudes.revisar')"
-                    wire:navigate>
-                    Revisar solicitudes
-                </flux:navlist.item>
+                    @can('solicitudes.view')
+                        <flux:navlist.item
+                            icon="list-bullet"
+                            href="{{ route('calidad.solicitudes.estado') }}"
+                            :current="request()->routeIs('calidad.solicitudes.estado')"
+                            wire:navigate>
+                            Estado de solicitudes
+                        </flux:navlist.item>
+                    @endcan
 
-            </flux:navlist.group>
+                    @can('solicitudes.review')
+                        <flux:navlist.item
+                            icon="check-circle"
+                            href="{{ route('calidad.solicitudes.revisar') }}"
+                            :current="request()->routeIs('calidad.solicitudes.revisar')"
+                            wire:navigate>
+                            Revisar solicitudes
+                        </flux:navlist.item>
+                    @endcan
 
-            <flux:navlist.group heading="Lista Maestra" class="grid">
-                <flux:navlist.item
-                    icon="book-open"
-                    href="{{ route('calidad.lista-maestra.index') }}"
-                    :current="request()->routeIs('calidad.lista-maestra.index')"
-                    wire:navigate>
-                    Ver lista maestra
-                </flux:navlist.item>
-            </flux:navlist.group>
+                </flux:navlist.group>
+            @endcanany
 
-            <flux:navlist.group heading="Organización" class="grid">
-                <flux:navlist.item
-                    icon="users"
-                    href="{{ route('calidad.organizacion.personal') }}"
-                    :current="request()->routeIs('calidad.organizacion.personal')"
-                    wire:navigate
-                >
-                    Personal
-                </flux:navlist.item>
-            </flux:navlist.group>
+            {{-- LISTA MAESTRA --}}
+            @canany(['lista-maestra.view','lista-maestra.export'])
+                <flux:navlist.group heading="Lista Maestra" class="grid">
+                    @can('lista-maestra.view')
+                        <flux:navlist.item
+                            icon="book-open"
+                            href="{{ route('calidad.lista-maestra.index') }}"
+                            :current="request()->routeIs('calidad.lista-maestra.index')"
+                            wire:navigate>
+                            Ver lista maestra
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+            @endcanany
 
+            {{-- ORGANIZACIÓN --}}
+            @canany(['org.personal.view','org.personal.edit'])
+                <flux:navlist.group heading="Organización" class="grid">
+                    @can('org.personal.view')
+                        <flux:navlist.item
+                            icon="users"
+                            href="{{ route('calidad.organizacion.personal') }}"
+                            :current="request()->routeIs('calidad.organizacion.personal')"
+                            wire:navigate>
+                            Personal
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+            @endcanany
 
+            {{-- CUENTA --}}
             <flux:navlist.group heading="Cuenta" class="grid">
-                <flux:navlist.item icon="user"
+                <flux:navlist.item
+                    icon="user"
                     href="/settings/profile"
                     :current="request()->is('settings/profile')"
                     wire:navigate>
                     Mi perfil
                 </flux:navlist.item>
             </flux:navlist.group>
+
         </flux:navlist>
 
         <flux:spacer/>

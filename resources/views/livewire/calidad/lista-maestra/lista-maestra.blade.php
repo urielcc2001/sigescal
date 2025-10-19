@@ -44,15 +44,51 @@
                     <option value="{{ $a->id }}">{{ $a->nombre }}</option>
                 @endforeach
             </select>
-            <flux:button
-                tag="a"
-                href="{{ route('calidad.lista-maestra.pdf', ['areaId' => $areaId, 'search' => $search]) }}"
-                target="_blank" rel="noopener"
-                icon="check"
-                variant="primary"
-                >
-                Descargar PDF
-            </flux:button>
+            @can('lista-maestra.export')
+                <flux:button
+                    icon="document-arrow-down"
+                    variant="outline"
+                    @click="$wire.openExportModal()">
+                    Descargar PDF
+                </flux:button>
+                <flux:modal wire:model="showExportModal" size="sm" wire:key="export-lm-modal">
+                    <div class="space-y-4">
+                        <flux:heading size="lg">Fecha para el reporte</flux:heading>
+
+                        <div>
+                            <flux:label>Fecha de autorización</flux:label>
+                            <input
+                                type="date"
+                                wire:model.live="exportDate"
+                                class="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm
+                                    focus:outline-none focus:ring-2 focus:ring-zinc-400
+                                    dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+                                min="1900-01-01" max="2100-12-31"
+                            />
+                            @error('exportDate') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                            <p class="text-xs text-zinc-500 mt-1">
+                                Por defecto tomamos la fecha más reciente de los documentos filtrados.
+                            </p>
+                        </div>
+
+                        <div class="flex justify-end gap-2">
+                            <flux:button variant="outline" @click="$wire.showExportModal = false">Cancelar</flux:button>
+                            <flux:button variant="primary" wire:click="exportPdf" wire:loading.attr="disabled">
+                                <span wire:loading.remove>Descargar</span>
+                                <span wire:loading>Preparando…</span>
+                            </flux:button>
+                        </div>
+                    </div>
+                </flux:modal>
+            @else
+                <flux:button
+                    icon="lock-closed"
+                    variant="outline"
+                    disabled
+                    title="No tienes permiso para exportar la Lista Maestra">
+                    Descargar PDF
+                </flux:button>
+            @endcan
         </div>
     </div>
 

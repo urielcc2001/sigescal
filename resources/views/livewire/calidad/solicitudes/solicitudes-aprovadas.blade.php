@@ -173,15 +173,35 @@
         </div>
 
         {{-- Acción: Descargar formato (solo si Aprobada) --}}
-        @if($solicitud->estado === 'aprobada')
-            <div class="pt-2 flex justify-center">
+        <div class="pt-2 flex flex-col items-center gap-1">
+            @can('solicitudes.export')
+                @if($solicitud->estado === 'aprobada')
+                    <flux:button
+                        wire:click="descargarFormato"
+                        variant="primary"
+                        class="!bg-indigo-600 hover:!bg-indigo-700 !text-white">
+                        Descargar formato
+                    </flux:button>
+                @else
+                    <flux:button
+                        icon="lock-closed"
+                        variant="outline"
+                        disabled
+                        title="Se habilitará hasta su aprobación.">
+                        Descargar formato
+                    </flux:button>
+                    <small class="text-xs text-zinc-500">Se habilitará hasta su aprobación.</small>
+                @endif
+            @else
                 <flux:button
-                    wire:click="descargarFormato"
-                    variant="primary"
-                    class="!bg-indigo-600 hover:!bg-indigo-700 !text-white">
+                    icon="lock-closed"
+                    variant="outline"
+                    disabled
+                    title="No tienes permiso para exportar.">
                     Descargar formato
                 </flux:button>
-            </div>
-        @endif
+                <small class="text-xs text-zinc-500">No tienes permiso para exportar.</small>
+            @endcan
+        </div>
     </div>
 </section>

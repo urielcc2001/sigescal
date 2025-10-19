@@ -404,21 +404,18 @@ th, td { padding:6px; vertical-align:top; }
     </tr>
     <tr>
       <td>Revisión del Responsable de proceso</td>
-      <td>M. A. RAÚL VÁZQUEZ RODRÍGUEZ</td>
-      <td></td>
-      <td></td>
+      <td>{{ $subdirNombre ?? '—' }}</td>
+      <td></td><td></td>
     </tr>
     <tr>
       <td>Documenta el Controlador de Documentos</td>
-      <td>M.S.C. JOSÉ ALBERTO VILLALOBOS SERRANO</td>
-      <td></td>
-      <td></td>
+      <td>{{ $ctrlNombre ?? 'VACANTE' }}</td>
+      <td></td><td></td>
     </tr>
     <tr>
       <td>Recibe la Coordinación de Calidad</td>
-      <td>M en P. REBECA GLORIA TEJEDA</td>
-      <td></td>
-      <td></td>
+      <td>{{ $coordNombre ?? 'VACANTE' }}</td>
+      <td></td><td></td>
     </tr>
   </tbody>
 </table>

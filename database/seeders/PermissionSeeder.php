@@ -32,6 +32,20 @@ class PermissionSeeder extends Seeder
             'create permissions',
             'update permissions',
             'delete permissions',
+            // Modulo de Solicitudes
+            'solicitudes.create',   // crear solicitud
+            'solicitudes.view',     // ver estado o detalle
+            'solicitudes.review',   // revisar solicitudes
+            'solicitudes.edit',     // editar (rechazadas/correcciones)
+            'solicitudes.export',   // descargar PDF de formato
+
+            // Modulo Lista Maestra
+            'lista-maestra.view',   // ver modulo
+            'lista-maestra.export', // exportar PDF
+
+            // Modulo Organización / Personal 
+            'org.personal.view',    // ver organigrama
+            'org.personal.edit',    // editar asignaciones
         ];
 
         foreach ($permissions as $permission) {

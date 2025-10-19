@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AreasTableSeeder::class,
             ListaMaestraSeeder::class,
+            OrgDepartmentsSeeder::class,
+            OrgPositionsSeeder::class,
+            OrgAssignmentsSeeder::class,
         ]);
     }
 }

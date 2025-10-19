@@ -27,9 +27,16 @@ class ListaMaestraPdfController extends Controller
             ->orderBy('id','asc')
             ->get();
 
-        // Fecha de actualización: el máximo de fecha_autorizacion o hoy si no hay
-        $max = $docs->max('fecha_autorizacion') ?? now()->toDateString();
-        $fechaActualizacion = mb_strtoupper(Carbon::parse($max)->isoFormat('D [DE] MMMM [DE] YYYY'), 'UTF-8');
+        // Si viene date desde el modal, úsela, si no, usa el max existente
+        $dateParam = (string) $request->get('date', '');
+        if ($dateParam !== '') {
+            $fecha = Carbon::createFromFormat('Y-m-d', $dateParam);
+        } else {
+            $max = $docs->max('fecha_autorizacion') ?? now()->toDateString();
+            $fecha = Carbon::parse($max);
+        }
+
+        $fechaActualizacion = mb_strtoupper($fecha->isoFormat('D [DE] MMMM [DE] YYYY'), 'UTF-8');
 
         $pdf = Pdf::loadView('pdf.lista-maestra', [
                 'docs' => $docs,
