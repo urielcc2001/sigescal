@@ -9,10 +9,30 @@ use App\Livewire\Calidad\Solicitudes\SolicitudesRechazadas;
 use App\Http\Controllers\SolicitudPdfController;
 use App\Http\Controllers\ListaMaestraPdfController;
 use App\Livewire\Calidad\Organizacion\Personal;
+use App\Livewire\Calidad\Quejasugerencia\Quejas;
+use App\Livewire\Calidad\Quejasugerencia\EstadoQuejas;
+use App\Livewire\Calidad\Quejasugerencia\RevisarQuejas;
+use App\Http\Controllers\ComplaintPdfController;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
-Route::get('/dashboard', \App\Livewire\Dashboard::class)->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth']) // o tu middleware para rol admin
+    ->get('/admin/quejas', RevisarQuejas::class)
+    ->name('admin.quejas.index');
+
+Route::get('/dashboard', \App\Livewire\Dashboard::class)
+    ->middleware('auth:web,students')   // acepta cualquiera de los dos
+    ->name('dashboard');
+
+Route::middleware('auth:students')->group(function () {
+    Route::get('/alumnos/quejas', Quejas::class)
+        ->name('students.quejas.new');
+
+    Route::get('/alumnos/estado-quejas', EstadoQuejas::class)
+        ->name('students.quejas.index');
+});
+
+
 
 Route::middleware(['auth'])->group(function (): void {
 
@@ -51,6 +71,10 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('calidad/lista-maestra/pdf', [ListaMaestraPdfController::class, 'download'])
         ->middleware('can:lista-maestra.export')
         ->name('calidad.lista-maestra.pdf');
+
+    Route::get('calidad/quejas/{complaint}/pdf/ver', [ComplaintPdfController::class, 'show'])
+        //->middleware('can:quejas.export')
+        ->name('calidad.quejas.pdf.ver');
 
     // ==== Solicitudes ====
     Route::get('calidad/solicitudes/crear', \App\Livewire\Calidad\Solicitudes\CrearSolicitud::class)
