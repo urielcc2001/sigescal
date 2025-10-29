@@ -15,6 +15,8 @@ class RevisarQuejas extends PageWithDashboard
 
     public string $search = '';
     public int $perPage = 10;
+    public string $sortField = 'created_at';
+    public string $sortDirection = 'desc';
 
     // Filtros simples
     public ?string $fEstado = null;     // abierta | en_proceso | respondida | cerrada
@@ -57,7 +59,7 @@ class RevisarQuejas extends PageWithDashboard
             })
             ->when($this->fEstado, fn($q) => $q->where('estado', $this->fEstado))
             ->when($this->fTipo, fn($q) => $q->where('tipo', $this->fTipo))
-            ->orderByDesc('created_at')
+            ->orderBy($this->sortField, $this->sortDirection) 
             ->paginate($this->perPage);
     }
 
@@ -66,6 +68,18 @@ class RevisarQuejas extends PageWithDashboard
         $this->selectedId   = $id;
         $this->showView     = true;
         $this->respuestaText = (string) ($this->selected?->respuesta ?? '');
+    }
+
+    public function sortBy(string $field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'desc';
+        }
+
+        if (method_exists($this, 'resetPage')) $this->resetPage();
     }
 
     public function closeView(): void

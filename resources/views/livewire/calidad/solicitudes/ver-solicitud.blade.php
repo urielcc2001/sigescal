@@ -180,6 +180,18 @@
             </flux:button>
         </div>
         @endif
+        @if($solicitud->estado === 'aprobada' && auth()->user()->can('solicitudes.export'))
+            <div class="pt-6 flex justify-center">
+                <flux:button
+                    as="a"
+                    href="{{ route('calidad.solicitudes.estado.formato.pdf', $solicitud) }}"
+                    icon="arrow-down-tray"
+                    variant="primary"
+                    class="!bg-indigo-600 hover:!bg-indigo-700 !text-white">
+                    Descargar formato
+                </flux:button>
+            </div>
+        @endif
     </div>
 
     {{-- Modal de aprobación --}}
@@ -213,4 +225,80 @@
         </div>
     </flux:modal>
     @endif
+    {{-- Motivo del rechazo (solo si está rechazada) --}}
+    @if($solicitud->estado === 'rechazada')
+        @php
+            $lastReject = $solicitud->historial()
+                ->where('estado', 'rechazada')
+                ->latest()
+                ->with('usuario:id,name') // si existe relación usuario
+                ->first();
+        @endphp
+
+        @if($lastReject)
+            <div class="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-red-800
+                        dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold">Motivo del rechazo</h4>
+                    <span class="text-xs opacity-80">
+                        {{ $lastReject->created_at->format('d/m/Y H:i') }}
+                    </span>
+                </div>
+
+                <p class="mt-1 whitespace-pre-line text-sm">
+                    {{ $lastReject->comentario ?: '—' }}
+                </p>
+
+                @if($lastReject->usuario)
+                    <p class="mt-1 text-xs opacity-80">
+                        Por: {{ $lastReject->usuario->name }}
+                    </p>
+                @endif
+            </div>
+        @endif
+    @endif
+    {{-- Comentario de aprobación (solo si está aprobada) --}}
+@if($solicitud->estado === 'aprobada')
+    @php
+        $historial = $solicitud->historial()
+            ->with('usuario:id,name')
+            ->orderBy('created_at')
+            ->get();
+    @endphp
+
+    <div class="mt-6 space-y-4">
+
+        @forelse($historial as $h)
+            @php
+                $baseClasses = "rounded-md p-4 border text-sm";
+                $color = match($h->estado) {
+                    'rechazada' => 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200',
+                    'aprobada'  => 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-200',
+                    default     => 'border-gray-200 bg-gray-50 text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200',
+                };
+            @endphp
+
+            <div class="{{ $baseClasses }} {{ $color }}">
+                <div class="flex justify-between">
+                    <strong class="capitalize">{{ $h->estado }}</strong>
+                    <span class="text-xs opacity-80">{{ $h->created_at->format('d/m/Y H:i') }}</span>
+                </div>
+
+                <p class="mt-1 whitespace-pre-line text-sm">
+                    {{ $h->comentario !== null && $h->comentario !== '' ? $h->comentario : 'Sin comentario' }}
+                </p>
+
+                @if($h->usuario)
+                    <p class="mt-1 text-xs opacity-80">Por: {{ $h->usuario->name }}</p>
+                @endif
+            </div>
+        @empty
+            {{-- Si por alguna razón no hay historial, mostramos al menos un aviso --}}
+            <div class="rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                No hay comentarios registrados en el historial.
+            </div>
+        @endforelse
+
+    </div>
+@endif
 </section>

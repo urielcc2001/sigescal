@@ -8,18 +8,19 @@
             Revisión de quejas y sugerencias
         </h2>
 
-        {{-- Buscador debajo del título (centrado, ancho máximo) --}}
-        <div class="mx-auto w-full max-w-3xl">
-            <flux:input
-                placeholder="Buscar (folio, No. control, estado, tipo)…"
-                wire:model.live.debounce.400ms="search"
-                class="w-full"
-            />
-        </div>
+        {{-- Buscador + filtros en una sola línea --}}
+        <div class="flex flex-row items-end gap-3 flex-nowrap">
+            {{-- Buscar (ocupa la mayoría) --}}
+            <div class="flex-1 min-w-0">
+                <flux:input
+                    placeholder="Buscar (folio, No. control, estado, tipo)…"
+                    wire:model.live.debounce.400ms="search"
+                    class="w-full"
+                />
+            </div>
 
-        {{-- Filtros en horizontal (en móvil se apilan) --}}
-        <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
-            <div class="w-full">
+            {{-- Tipo --}}
+            <div class="shrink-0 w-44">
                 <flux:select wire:model.live="fTipo" class="w-full">
                     <option value="">Tipo (todos)</option>
                     <option value="queja">Queja</option>
@@ -27,7 +28,8 @@
                 </flux:select>
             </div>
 
-            <div class="w-full">
+            {{-- Estado --}}
+            <div class="shrink-0 w-44">
                 <flux:select wire:model.live="fEstado" class="w-full">
                     <option value="">Estado (todos)</option>
                     <option value="abierta">Abierta</option>
@@ -37,7 +39,8 @@
                 </flux:select>
             </div>
 
-            <div class="w-full">
+            {{-- Por página --}}
+            <div class="shrink-0 w-28">
                 <flux:select wire:model.live="perPage" class="w-full">
                     <option value="10">10 / pág.</option>
                     <option value="20">20 / pág.</option>
@@ -56,7 +59,15 @@
                     <th class="px-4 py-3 font-medium">Tipo</th>
                     <th class="px-4 py-3 font-medium">No. control</th>
                     <th class="px-4 py-3 font-medium">Estado</th>
-                    <th class="px-4 py-3 font-medium">Fecha</th>
+                    <th class="px-4 py-3 font-medium cursor-pointer select-none"
+                        wire:click="sortBy('created_at')">
+                        <span class="inline-flex items-center gap-1">
+                            Fecha
+                            @if($sortField === 'created_at')
+                                <span class="font-mono text-xs">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                            @endif
+                        </span>
+                    </th>
                     <th class="px-4 py-3 font-medium text-right">Acciones</th>
                 </tr>
             </thead>
@@ -80,7 +91,7 @@
                                 {{ str_replace('_',' ',$row->estado) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3">{{ optional($row->created_at)->format('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-3">{{ optional($row->created_at)->format('d/m/Y') }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-2">
                                 @if($row->estado === 'abierta')
