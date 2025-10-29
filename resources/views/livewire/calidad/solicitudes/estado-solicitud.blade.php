@@ -6,18 +6,22 @@
 
     <div class="mt-4 space-y-4">
         {{-- Filtros --}}
-        <div class="flex flex-col gap-3 md:flex-row md:items-end">
-            <div class="flex-1">
+        <div class="flex flex-row items-end gap-3 flex-nowrap">
+            {{-- Buscar (ocupa la mayoría) --}}
+            <div class="flex-1 min-w-0">
                 <label class="block text-sm font-medium">Buscar</label>
-                <input type="text"
-                       wire:model.live.debounce.400ms="search"
-                       class="w-full rounded-md border px-3 py-2"
-                       placeholder="Folio, documento, descripción..." />
+                <input
+                    type="text"
+                    wire:model.live.debounce.400ms="search"
+                    class="w-full rounded-md border px-3 py-2"
+                    placeholder="Folio, documento, descripción..."
+                />
             </div>
 
-            <div>
+            {{-- Estatus (ancho fijo) --}}
+            <div class="shrink-0 w-44">
                 <label class="block text-sm font-medium">Estatus</label>
-                <select wire:model.live="estado" class="rounded-md border px-3 py-2">
+                <select wire:model.live="estado" class="w-full rounded-md border px-3 py-2">
                     <option value="">Todos</option>
                     <option value="en_revision">En revisión</option>
                     <option value="aprobada">Aprobada</option>
@@ -25,9 +29,10 @@
                 </select>
             </div>
 
-            <div>
+            {{-- Por página (ancho fijo) --}}
+            <div class="shrink-0 w-28">
                 <label class="block text-sm font-medium">Por página</label>
-                <select wire:model.live="perPage" class="rounded-md border px-3 py-2">
+                <select wire:model.live="perPage" class="w-full rounded-md border px-3 py-2">
                     <option>10</option>
                     <option>25</option>
                     <option>50</option>

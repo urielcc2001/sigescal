@@ -103,6 +103,41 @@
                 </flux:navlist.group>
             @endcanany
 
+            {{-- QUEJAS Y SUGERENCIAS (alumnos) --}}
+            @auth('students')
+                <flux:navlist.group heading="Quejas y sugerencias" class="grid">
+                    <flux:navlist.item
+                        icon="chat-bubble-left-right"
+                        href="{{ route('students.quejas.new') }}"
+                        :current="request()->routeIs('students.quejas.new')"
+                        wire:navigate>
+                        Crear queja/sugerencia
+                    </flux:navlist.item>
+                    <flux:navlist.item
+                        icon="chat-bubble-left-right"
+                        href="{{ route('students.quejas.index') }}"
+                        :current="request()->routeIs('students.quejas.index')"
+                        wire:navigate>
+                        Ver estado
+                    </flux:navlist.item>
+                </flux:navlist.group>
+            @endauth
+
+            {{-- QUEJAS Y SUGERENCIAS (admin / responsables) --}}
+            @auth  {{-- guard por defecto "web" (no students) --}}
+                @unless (auth('students')->check())
+                    <flux:navlist.group heading="Quejas y sugerencias (admin)" class="grid">
+                        <flux:navlist.item
+                            icon="inbox"
+                            href="{{ route('admin.quejas.index') }}"
+                            :current="request()->routeIs('admin.quejas.index')"
+                            wire:navigate>
+                            Revisar / responder
+                        </flux:navlist.item>
+                    </flux:navlist.group>
+                @endunless
+            @endauth
+
             {{-- CUENTA --}}
             <flux:navlist.group heading="Cuenta" class="grid">
                 <flux:navlist.item

@@ -53,7 +53,7 @@ class CreateSuperAdminCommand extends Command
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($password),
-            'locale' => 'en',
+            'locale' => 'es',
         ]);
 
         // assign the role

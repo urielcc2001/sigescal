@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             OrgDepartmentsSeeder::class,
             OrgPositionsSeeder::class,
             OrgAssignmentsSeeder::class,
+            StudentSeeder::class,
         ]);
     }
 }
