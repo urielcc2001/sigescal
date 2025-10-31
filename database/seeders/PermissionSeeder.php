@@ -42,10 +42,15 @@ class PermissionSeeder extends Seeder
             // Modulo Lista Maestra
             'lista-maestra.view',   // ver modulo
             'lista-maestra.export', // exportar PDF
+            'lista-maestra.edit',   // editar
+            'lista-maestra.delete', // borrrar 
 
             // Modulo Organización / Personal 
             'org.personal.view',    // ver organigrama
             'org.personal.edit',    // editar asignaciones
+
+            // Módulo Quejas y Sugerencias
+            'quejas.review',      // revisar / responder quejas
         ];
 
         foreach ($permissions as $permission) {

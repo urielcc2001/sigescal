@@ -17,5 +17,23 @@ class RoleSeeder extends Seeder
         $permissions = Permission::all()->pluck('name')->toArray();
         $role->givePermissionTo($permissions);
 
+        // Jefe de departamento
+        $jefe = Role::query()->updateOrCreate(['name' => 'Jefe de departamento']);
+        $jefe->syncPermissions([
+            'solicitudes.create',
+            'solicitudes.view',
+            'solicitudes.edit',
+            'solicitudes.export',
+            'lista-maestra.view',
+            'org.personal.view',
+        ]);
+
+        // coordinación de calidad
+        $coord = Role::query()->updateOrCreate(['name' => 'coordinación de calidad']);
+        $coord->syncPermissions([
+            'lista-maestra.view',
+            'org.personal.view',
+            'quejas.review',
+        ]);
     }
 }

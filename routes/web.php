@@ -16,8 +16,8 @@ use App\Http\Controllers\ComplaintPdfController;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
-Route::middleware(['auth']) // o tu middleware para rol admin
-    ->get('/admin/quejas', RevisarQuejas::class)
+Route::get('/admin/quejas', \App\Livewire\Calidad\Quejasugerencia\RevisarQuejas::class)
+    ->middleware(['auth', 'can:quejas.review'])
     ->name('admin.quejas.index');
 
 Route::get('/dashboard', \App\Livewire\Dashboard::class)

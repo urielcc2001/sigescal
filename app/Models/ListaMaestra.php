@@ -8,6 +8,9 @@ class ListaMaestra extends Model
 {
     protected $table = 'lista_maestra';
     protected $fillable = ['codigo','nombre','revision','fecha_autorizacion','area_id'];
+    protected $casts = [
+        'fecha_autorizacion' => 'date', 
+    ];
 
     public function area()
     {
