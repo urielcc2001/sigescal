@@ -182,7 +182,7 @@ class ListaMaestra extends PageWithDashboard
                        ->orWhere('nombre', $likeOp, $needle);
                 });
             })
-            ->orderBy('codigo')
+            ->orderBy('id')
             ->paginate(15);
 
         return view('livewire.calidad.lista-maestra.lista-maestra', [
