@@ -124,17 +124,19 @@
             @endauth
 
             {{-- QUEJAS Y SUGERENCIAS (admin / responsables) --}}
-            @auth  {{-- guard por defecto "web" (no students) --}}
+            @auth
                 @unless (auth('students')->check())
-                    <flux:navlist.group heading="Quejas y sugerencias (admin)" class="grid">
-                        <flux:navlist.item
-                            icon="inbox"
-                            href="{{ route('admin.quejas.index') }}"
-                            :current="request()->routeIs('admin.quejas.index')"
-                            wire:navigate>
-                            Revisar / responder
-                        </flux:navlist.item>
-                    </flux:navlist.group>
+                    @can('quejas.review')
+                        <flux:navlist.group heading="Quejas y sugerencias (admin)" class="grid">
+                            <flux:navlist.item
+                                icon="inbox"
+                                href="{{ route('admin.quejas.index') }}"
+                                :current="request()->routeIs('admin.quejas.index')"
+                                wire:navigate>
+                                Revisar / responder
+                            </flux:navlist.item>
+                        </flux:navlist.group>
+                    @endcan
                 @endunless
             @endauth
 

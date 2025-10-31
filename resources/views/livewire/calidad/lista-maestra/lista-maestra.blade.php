@@ -51,7 +51,7 @@
                     @click="$wire.openExportModal()">
                     Descargar PDF
                 </flux:button>
-                <flux:modal wire:model="showExportModal" size="sm" wire:key="export-lm-modal">
+                <flux:modal wire:model="showExportModal" wire:key="export-lm-modal">
                     <div class="space-y-4">
                         <flux:heading size="lg">Fecha para el reporte</flux:heading>
 
@@ -107,7 +107,7 @@
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                 @forelse($docs as $row)
-                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
+                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/40" wire:key="doc-{{ $row->id }}">
                         <td class="px-4 py-2 text-sm font-medium">{{ $row->codigo }}</td>
                         <td class="px-4 py-2 text-sm">{{ $row->nombre }}</td>
                         <td class="px-4 py-2 text-sm">{{ $row->revision }}</td>
@@ -118,7 +118,51 @@
                                 —
                             @endif
                         </td>
-                        <td class="px-4 py-2 text-sm text-zinc-400 dark:text-zinc-500">—</td>
+                        <td class="px-4 py-2 text-sm">
+                            <div class="flex items-center gap-1">
+                                {{-- Editar --}}
+                                @can('lista-maestra.edit')
+                                    <flux:button
+                                        size="xs"
+                                        variant="ghost"
+                                        icon="pencil-square"
+                                        wire:click="openEdit({{ $row->id }})"
+                                        title="Editar">
+                                        Editar
+                                    </flux:button>
+                                @elsecan('lista-maestra.view')
+                                    <flux:button
+                                        size="xs"
+                                        variant="outline"
+                                        icon="lock-closed"
+                                        disabled
+                                        title="No tienes permiso para editar en la Lista Maestra">
+                                        Editar
+                                    </flux:button>
+                                @endcan
+
+                                {{-- Eliminar --}}
+                                @can('lista-maestra.delete')
+                                    <flux:button
+                                        size="xs"
+                                        variant="ghost"
+                                        icon="trash"
+                                        wire:click="confirmDelete({{ $row->id }})"
+                                        title="Eliminar">
+                                        Eliminar
+                                    </flux:button>
+                                @elsecan('lista-maestra.view')
+                                    <flux:button
+                                        size="xs"
+                                        variant="outline"
+                                        icon="lock-closed"
+                                        disabled
+                                        title="No tienes permiso para eliminar en la Lista Maestra">
+                                        Eliminar
+                                    </flux:button>
+                                @endcan
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
@@ -127,9 +171,122 @@
                         </td>
                     </tr>
                 @endforelse
-            </tbody>
+                </tbody>
         </table>
     </div>
+
+    {{-- Modal: Editar documento --}}
+    <flux:modal wire:model="showEditModal" title="Editar documento" icon="pencil-square" size="lg">
+        <div class="space-y-6 text-sm">
+            {{-- Encabezado contextual --}}
+            <div class="rounded-md border p-3 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/40">
+                <div class="text-xs font-semibold uppercase text-neutral-500">Información del documento</div>
+                <div class="mt-1 text-neutral-700 dark:text-neutral-300">
+                    Ajusta los campos y guarda los cambios. Los valores se validan antes de actualizar.
+                </div>
+            </div>
+
+            {{-- Formulario --}}
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <flux:label>Código</flux:label>
+                    <flux:input
+                        placeholder="ITTUX-CA-PO-001-01"
+                        wire:model.defer="codigo"
+                        class="w-full"
+                    />
+                    @error('codigo') <div class="mt-1 text-xs text-red-600">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
+                    <flux:label>Revisión</flux:label>
+                    <flux:input
+                        placeholder="Rev. 2"
+                        wire:model.defer="revision"
+                        class="w-full"
+                    />
+                    @error('revision') <div class="mt-1 text-xs text-red-600">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="sm:col-span-2">
+                    <flux:label>Título</flux:label>
+                    <flux:input
+                        placeholder="Nombre del documento"
+                        wire:model.defer="nombre"
+                        class="w-full"
+                    />
+                    @error('nombre') <div class="mt-1 text-xs text-red-600">{{ $message }}</div> @enderror
+                </div>
+
+                <div>
+                    <flux:label>Fecha de autorización</flux:label>
+                    <input
+                        type="date"
+                        wire:model.defer="fecha_autorizacion"
+                        class="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-zinc-400
+                            dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+                        min="1900-01-01" max="2100-12-31"
+                    />
+                    @error('fecha_autorizacion') <div class="mt-1 text-xs text-red-600">{{ $message }}</div> @enderror
+                </div>
+            </div>
+
+            {{-- Acciones (dentro del body, no en slot footer) --}}
+            <div class="flex justify-end gap-2 pt-2">
+                <flux:button variant="ghost" @click="$wire.showEditModal=false">Cancelar</flux:button>
+
+                <flux:button
+                    variant="primary"
+                    icon="check"
+                    wire:click="saveEdit"
+                    wire:target="saveEdit"
+                    wire:loading.attr="disabled"
+                    class="!bg-blue-600 hover:!bg-blue-700 !text-white"
+                >
+                    <span wire:loading.remove>Guardar cambios</span>
+                    <span wire:loading>Guardando…</span>
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Modal: Confirmar eliminación --}}
+    <flux:modal wire:model="showDeleteModal" title="Eliminar documento" icon="trash">
+        <div class="space-y-5 text-sm">
+            <div class="rounded-md border p-3 dark:border-neutral-700 bg-red-50 dark:bg-red-900/20">
+                <div class="text-xs font-semibold uppercase text-red-600 dark:text-red-300">Advertencia</div>
+                <div class="mt-1 text-red-700 dark:text-red-200">
+                    Esta acción no se puede deshacer.
+                </div>
+            </div>
+
+            <p class="text-neutral-700 dark:text-neutral-300">
+                ¿Seguro que deseas eliminar
+                @if($deletingLabel)
+                    <span class="font-semibold">"{{ $deletingLabel }}"</span>?
+                @else
+                    este documento?
+                @endif
+            </p>
+
+            {{-- Acciones (dentro del body) --}}
+            <div class="flex justify-end gap-2">
+                <flux:button variant="ghost" @click="$wire.showDeleteModal=false">Cancelar</flux:button>
+
+                <flux:button
+                    variant="danger"
+                    icon="trash"
+                    wire:click="delete"
+                    wire:target="delete"
+                    wire:loading.attr="disabled"
+                >
+                    <span wire:loading.remove>Eliminar</span>
+                    <span wire:loading>Eliminando…</span>
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 
     {{-- Paginación --}}
     <div class="mt-4">
