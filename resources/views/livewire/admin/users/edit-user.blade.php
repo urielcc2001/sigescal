@@ -61,6 +61,34 @@
             </div>
         </div>
 
+        {{-- Áreas (checklist) --}}
+        <div class="space-y-2">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-neutral-500">Selecciona una o varias áreas</div>
+                <div class="flex gap-2">
+                    <flux:button size="xs" variant="subtle" icon="check" wire:click="selectAllAreas">
+                        Seleccionar todo
+                    </flux:button>
+                    <flux:button size="xs" variant="ghost" icon="x-mark" wire:click="clearAreas">
+                        Limpiar
+                    </flux:button>
+                </div>
+            </div>
+
+            <flux:checkbox.group
+                wire:model.live="areaIds"
+                label="Áreas"
+                class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+            >
+                @foreach($areas as $a)
+                    <flux:checkbox
+                        value="{{ $a->id }}"
+                        label="{{ $a->codigo }} — {{ $a->nombre }}"
+                    />
+                @endforeach
+            </flux:checkbox.group>
+        </div>
+
         <flux:checkbox.group wire:model.live="userRoles" label="{{ __('users.roles') }}" description="{{ __('users.roles_description') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             @foreach($roles as $role)
                 <flux:checkbox label="{{$role->name}}" value="{{$role->id}}"/>
