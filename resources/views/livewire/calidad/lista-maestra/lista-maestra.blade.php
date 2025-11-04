@@ -5,9 +5,9 @@
     </x-page-heading>
 
     {{-- Filtros --}}
-    <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div class="mb-4 flex flex-row items-end gap-3 flex-nowrap">
         {{-- Buscador --}}
-        <div>
+        <div class="flex-1 min-w-0">
             <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-200">
                 Buscar
             </label>
@@ -17,80 +17,96 @@
                     placeholder="Buscar por código o título…"
                     wire:model.live.debounce.500ms="search"
                     class="w-full rounded-md border border-zinc-300 bg-white p-2 pr-9 text-sm
-                           dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                 />
                 @if($search !== '')
                     <button
                         type="button"
                         wire:click="$set('search','')"
                         class="absolute inset-y-0 right-2 my-auto h-6 w-6 rounded-md text-zinc-500 hover:text-zinc-800
-                               dark:text-zinc-400 dark:hover:text-zinc-200"
+                            dark:text-zinc-400 dark:hover:text-zinc-200"
                         aria-label="Limpiar búsqueda">×</button>
                 @endif
             </div>
         </div>
 
         {{-- Filtro por Área --}}
-        <div>
+        <div class="shrink-0 w-56">
             <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-200">
                 Filtrar por área
             </label>
             <select
                 wire:model.live="areaId"
                 class="mt-1 w-full rounded-md border border-zinc-300 bg-white p-2 text-sm
-                       dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                    dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
                 <option value="">Todas las áreas</option>
                 @foreach($areas as $a)
                     <option value="{{ $a->id }}">{{ $a->nombre }}</option>
                 @endforeach
             </select>
-            @can('lista-maestra.export')
-                <flux:button
-                    icon="document-arrow-down"
-                    variant="outline"
-                    @click="$wire.openExportModal()">
-                    Descargar PDF
-                </flux:button>
-                <flux:modal wire:model="showExportModal" wire:key="export-lm-modal">
-                    <div class="space-y-4">
-                        <flux:heading size="lg">Fecha para el reporte</flux:heading>
+        </div>
 
-                        <div>
-                            <flux:label>Fecha de autorización</flux:label>
-                            <input
-                                type="date"
-                                wire:model.live="exportDate"
-                                class="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm
-                                    focus:outline-none focus:ring-2 focus:ring-zinc-400
-                                    dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
-                                min="1900-01-01" max="2100-12-31"
-                            />
-                            @error('exportDate') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-                            <p class="text-xs text-zinc-500 mt-1">
-                                Por defecto tomamos la fecha más reciente de los documentos filtrados.
-                            </p>
-                        </div>
+        {{-- Botón Exportar --}}
+        <div class="shrink-0">
+            {{-- Label fantasma para alinear verticalmente --}}
+            <label class="block text-sm font-medium opacity-0 select-none">
+                Acción
+            </label>
 
-                        <div class="flex justify-end gap-2">
-                            <flux:button variant="outline" @click="$wire.showExportModal = false">Cancelar</flux:button>
-                            <flux:button variant="primary" wire:click="exportPdf" wire:loading.attr="disabled">
-                                <span wire:loading.remove>Descargar</span>
-                                <span wire:loading>Preparando…</span>
-                            </flux:button>
-                        </div>
-                    </div>
-                </flux:modal>
-            @else
-                <flux:button
-                    icon="lock-closed"
-                    variant="outline"
-                    disabled
-                    title="No tienes permiso para exportar la Lista Maestra">
-                    Descargar PDF
-                </flux:button>
-            @endcan
+            <div class="mt-1">
+                @can('lista-maestra.export')
+                    <flux:button
+                        icon="document-arrow-down"
+                        variant="outline"
+                        class="w-full sm:w-auto"
+                        @click="$wire.openExportModal()">
+                        Descargar PDF
+                    </flux:button>
+                @elsecan('lista-maestra.view')
+                    <flux:button
+                        icon="lock-closed"
+                        variant="outline"
+                        class="w-full sm:w-auto opacity-70 cursor-not-allowed"
+                        disabled
+                        title="No tienes permiso para exportar la Lista Maestra">
+                        Descargar PDF
+                    </flux:button>
+                @endcan
+            </div>
         </div>
     </div>
+
+    @can('lista-maestra.export')
+        <flux:modal wire:model="showExportModal" wire:key="export-lm-modal">
+            <div class="space-y-4">
+                <flux:heading size="lg">Fecha para el reporte</flux:heading>
+
+                <div>
+                    <flux:label>Fecha de autorización</flux:label>
+                    <input
+                        type="date"
+                        wire:model.live="exportDate"
+                        class="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-zinc-400
+                            dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+                        min="1900-01-01" max="2100-12-31"
+                    />
+                    @error('exportDate') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    <p class="text-xs text-zinc-500 mt-1">
+                        Por defecto tomamos la fecha más reciente de los documentos filtrados.
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <flux:button variant="outline" @click="$wire.showExportModal = false">Cancelar</flux:button>
+                    <flux:button variant="primary" wire:click="exportPdf" wire:loading.attr="disabled">
+                        <span wire:loading.remove>Descargar</span>
+                        <span wire:loading>Preparando…</span>
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
 
     {{-- Tabla --}}
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm

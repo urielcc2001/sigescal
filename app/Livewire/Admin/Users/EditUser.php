@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Models\User;
+use App\Models\Area;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +33,11 @@ class EditUser extends Component
     /** @var array<int,string> */
     public array $userRoles = [];
 
+    /** Áreas (checklist) */
+    /** @var array<int> */
+    #[Validate(['nullable','array','distinct','exists:areas,id'])]
+    public array $areaIds = [];
+
     public string $new_password = '';
     public string $new_password_confirmation = '';
     public bool $passwordVisible = false;
@@ -46,6 +52,19 @@ class EditUser extends Component
         $this->email  = $user->email;
         $this->locale = $user->locale ?? 'es';
         $this->userRoles = $user->roles->pluck('id')->toArray();
+
+        // Cargar áreas del usuario al checklist
+        $this->areaIds = $user->areas()->pluck('areas.id')->map(fn($id) => (int)$id)->all();
+    }
+
+    public function selectAllAreas(): void
+    {
+        $this->areaIds = Area::pluck('id')->map(fn($id) => (int)$id)->all();
+    }
+
+    public function clearAreas(): void
+    {
+        $this->areaIds = [];
     }
 
     public function updateUser(): void
@@ -83,6 +102,9 @@ class EditUser extends Component
         $userRoles = Arr::map($this->userRoles, fn ($role): int => (int) $role);
         $this->user->syncRoles($userRoles);
 
+        // Áreas (pivot)
+        $this->user->areas()->sync(array_map('intval', $this->areaIds ?? []));
+
         $this->flash('success', __('users.user_updated'));
         $this->redirect(route('admin.users.index'), true);
     }
@@ -92,6 +114,7 @@ class EditUser extends Component
     {
         return view('livewire.admin.users.edit-user', [
             'roles' => Role::all(),
+            'areas' => Area::orderBy('nombre')->get(),
             'locales' => [
                 'es' => 'Español',
                 'en' => 'English',

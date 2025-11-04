@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Models\User;
+use App\Models\Area;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
@@ -26,11 +27,16 @@ class CreateUser extends Component
     #[Validate('required|string|max:2')]
     public string $locale = 'es';
 
-    /** @var array<mixed> */
+    /** @var array<int> */
     #[Validate('nullable|array')]
     public array $selectedRoles = [];
 
-    // 👇 nuevas props para password
+    // Áreas (solo múltiples)
+    /** @var array<int> */
+    #[Validate(['nullable','array','distinct','exists:areas,id'])]
+    public array $areaIds = [];
+
+    // Password
     public string $password = '';
     public string $password_confirmation = '';
     public bool   $passwordVisible = false;
@@ -39,6 +45,16 @@ class CreateUser extends Component
     public function mount(): void
     {
         $this->authorize('create users');
+    }
+
+    public function selectAllAreas(): void
+    {
+        $this->areaIds = Area::pluck('id')->map(fn($id) => (int)$id)->all();
+    }
+
+    public function clearAreas(): void
+    {
+        $this->areaIds = [];
     }
 
     public function createUser(): void
@@ -65,8 +81,10 @@ class CreateUser extends Component
             $user->syncRoles($userRoles);
         }
 
-        $this->flash('success', __('users.user_created'));
+        // Áreas (pivot)
+        $user->areas()->sync($this->areaIds ?? []);
 
+        $this->flash('success', __('users.user_created'));
         $this->redirect(route('admin.users.index'), true);
     }
 
@@ -74,7 +92,8 @@ class CreateUser extends Component
     public function render(): View
     {
         return view('livewire.admin.users.create-user', [
-            'roles' => Role::all(),
+            'roles'   => Role::all(),
+            'areas'   => Area::orderBy('nombre')->get(),
             'locales' => [
                 'es' => 'Español',
                 'en' => 'English',

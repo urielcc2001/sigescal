@@ -36,7 +36,10 @@
             </div>
         </div>
     </div>
-
+    @php $noAreas = !auth()->user()->hasAnyRole(['Super Admin','Admin']) && !auth()->user()->areas()->exists(); @endphp
+    @if($noAreas)
+    <div class="rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">No tienes áreas asignadas. Pide a un administrador que te asigne una.</div>
+    @endif
     {{-- Bloque: Descripción del documento --}}
     <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
         <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL DOCUMENTO</div>

@@ -45,9 +45,25 @@ class CrearSolicitud extends PageWithDashboard
         $this->fecha = now()->toDateString();
         $this->folio = $this->generarFolio();
 
-        // Cargar catálogos
-        $this->documentos = ListaMaestra::orderBy('codigo')->get(['id','codigo','nombre','area_id','revision']);
-        $this->areas = Area::orderBy('nombre')->get(['id','nombre']);
+        $user = auth()->user();
+        $isAdmin = $user?->hasRole('Super Admin') ?? false;
+
+        // IDs de áreas del usuario (pivot)
+        $userAreaIds = $user?->areas()->pluck('areas.id')->all() ?? [];
+
+        // Documentos: Admin ve todo; demás solo sus áreas
+        $docQuery = ListaMaestra::query()->orderBy('codigo');
+        if (!$isAdmin) {
+            $docQuery->whereIn('area_id', $userAreaIds ?: [-1]); // evita traer todo si está vacío
+        }
+        $this->documentos = $docQuery->get(['id','codigo','nombre','area_id','revision']);
+
+        // Áreas para mostrar nombre del área (col derecha)
+        $areaQuery = Area::query()->orderBy('nombre');
+        if (!$isAdmin) {
+            $areaQuery->whereIn('id', $userAreaIds ?: [-1]);
+        }
+        $this->areas = $areaQuery->get(['id','nombre']);
     }
 
     /** Autocompletar área al elegir código */
