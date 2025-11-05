@@ -85,7 +85,7 @@ class CrearSolicitud extends PageWithDashboard
         return [
             'folio'                 => ['required','string','max:50'],
             'fecha'                 => ['required','date'],
-            'documento_id'          => ['nullable','exists:lista_maestra,id'],
+            'documento_id'          => ['required','exists:lista_maestra,id'],
             'area_id'               => ['nullable','exists:areas,id'],
             'tipo'                  => ['required','in:creacion,modificacion,baja'],
             'cambio_dice'           => ['nullable','string'],
