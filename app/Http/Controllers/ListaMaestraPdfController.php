@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\ListaMaestra;
 use App\Models\Area;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+
+use niklasravnsborg\LaravelPdf\Facades\Pdf as MPDF;
 
 class ListaMaestraPdfController extends Controller
 {
@@ -27,7 +28,6 @@ class ListaMaestraPdfController extends Controller
             ->orderBy('id','asc')
             ->get();
 
-        // Si viene date desde el modal, úsela, si no, usa el max existente
         $dateParam = (string) $request->get('date', '');
         if ($dateParam !== '') {
             $fecha = Carbon::createFromFormat('Y-m-d', $dateParam);
@@ -35,23 +35,34 @@ class ListaMaestraPdfController extends Controller
             $max = $docs->max('fecha_autorizacion') ?? now()->toDateString();
             $fecha = Carbon::parse($max);
         }
-
         $fechaActualizacion = mb_strtoupper($fecha->isoFormat('D [DE] MMMM [DE] YYYY'), 'UTF-8');
 
-        $pdf = Pdf::loadView('pdf.lista-maestra', [
-                'docs' => $docs,
-                'fechaActualizacion' => $fechaActualizacion,
-                // metadatos del formato
-                'formTitle' => 'Formato para la Lista Maestra de Documentos Internos Controlados',
-                'formCode'  => 'ITTUX-CA-PG-001-02',
-                'formRev'   => '0',
-                'norma'     => 'ISO 9001:2015',
-                'requisito' => '7.5.3',
-            ])
-            ->setOption('isPhpEnabled', true)
-            ->setPaper('letter', 'portrait');
+        $data = [
+            'docs' => $docs,
+            'fechaActualizacion' => $fechaActualizacion,
+            'formTitle' => 'Formato para la Lista Maestra de Documentos Internos Controlados',
+            'formCode'  => 'ITTUX-CA-PG-001-02',
+            'formRev'   => '0',
+            'norma'     => 'ISO 9001:2015',
+            'requisito' => '7.5.3',
+        ];
 
-        $filename = 'Lista_Maestra.pdf';
-        return $pdf->stream($filename); // o ->download($filename)
+        $pdf = MPDF::loadView('pdf.lista-maestra', $data, [], [
+            'format' => 'Letter',
+            'orientation' => 'P',
+            'tempDir' => storage_path('app/mpdf-temp'), // opcional para Sail
+
+            // Aquí configuramos la instancia mPDF directamente
+            'instanceConfigurator' => function (\Mpdf\Mpdf $mpdf) {
+                // Denegar TODO: no imprimir, no copiar, no editar, etc.
+                // Si quisieras permitir algo, p.ej. 'copy', pásalo en el array.
+                $mpdf->SetProtection([], '', 'ITTUX-SGC-OWNER'); // owner password
+
+                $mpdf->SetTitle('Lista Maestra');
+                $mpdf->SetAuthor('ITTux SGC');
+            },
+        ]);
+
+        return $pdf->download('Lista_Maestra.pdf'); // o ->stream('Lista_Maestra.pdf')
     }
 }

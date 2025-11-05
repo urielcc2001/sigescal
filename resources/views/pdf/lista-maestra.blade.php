@@ -1,13 +1,14 @@
 @php
 use Carbon\Carbon;
+
 $logoITTux = public_path('logos/Logo_ITTux.png');
 $h = fn($v) => e((string)$v);
 $n = 1;
+
 function solo_na($v) {
     if (!$v) return '';
     $s = trim((string)$v);
-
-    // Si empieza con NA-, N/A, N.A., NA (en mayúsculas/minúsculas) => mostrar solo "N/A"
+    // Si empieza con NA-, N/A, N.A., NA (mayúsc/minúsc) => mostrar solo "N/A"
     if (preg_match('/^(?:n\/?\.?a)(?:\b|[-_])/i', $s)) {
         return 'N/A';
     }
@@ -19,230 +20,184 @@ function solo_na($v) {
 <head>
 <meta charset="UTF-8">
 <title>{{ $formCode ?? 'ITTUX-CA-PG-001-02' }} — Lista Maestra</title>
+
 <style>
-    /* ===== Reserva real de espacio para el header ===== */
-    @page { margin: 170px 10mm 16mm 10mm; }  /* header bajito y ancho */
-    * { font-family: DejaVu Sans, sans-serif; font-size:12px; color:#000; }
-    body { margin:0; }
+  /* ===== mPDF: márgenes y vinculación de header/footer ===== */
+  @page {
+    margin: 44mm 10mm 16mm 10mm; /* top right bottom left */
+    header: header1;
+    footer: footer1;
+  }
 
-    /* ===== Header fijo, dentro del margen negativo ===== */
-    header{
-        position: fixed;
-        left: 6mm; right: 6mm;
-        top: -140px;            /* encaja en @page margin-top */
-        height: 120px;          /* alto real (bajo y horizontal) */
-    }
+  * { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #000; }
+  body { margin: 0; }
 
-    /* Franja de fecha dentro del header */
-    .fecha-header{
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1px;           /* separadita del recuadro */
-    }
-    .fecha-header td{
-      border: none;              /* sin bordes (como el original) */
-      padding: 0;
-      text-align: right;         /* o center si la quieres centrada */
-      font-weight: 700;
-      font-size: 11px;
-    }
+  /* ===== Encabezado (dentro de htmlpageheader) ===== */
+  .encabezado { width:100%; border-collapse:collapse; border:1px solid #bfbfbf; }
+  .encabezado td { border:1px solid #bfbfbf; padding:1px 1px; vertical-align:middle; }
 
-    /* Encabezado compacto */
-    .encabezado{ width:100%; border-collapse:collapse; border:1px solid #bfbfbf; }
-    .encabezado td{ border:1px solid #bfbfbf; padding:1px 1px; vertical-align:middle; }
+  .logo-cell { width:80px; text-align:center; }
+  .logo     { max-height:80px; display:block; margin:0 auto; }
 
-    /* Columna 1: logo */
-    .logo-cell{ width:80px; text-align:center; }
-    .logo{ max-height:80px; display:block; margin:0 auto; }
+  .mid      { width:auto; }
+  .titulo   { font-weight:700; font-size:13px; line-height:1.15; margin:0; }
+  .ref      { font-size:12.5px !important; line-height:1.2; }
+  .ref strong { font-size:12.5px !important; }
 
-    /* Columna 2: dos filas (título / referencia) */
-    .mid{ width:auto; }
-    .titulo{ font-weight:700; font-size:13px; line-height:1.15; margin:0; }
-    .ref{ font-size:12.5px !important; line-height:1.2; }
-    .ref strong{ font-size:12.5px !important; }
+  .right-top, .right-bottom { width:150px; padding:0; }
+  .right-rows { width:100%; border-collapse:collapse; border:none; }
+  .right-rows td {
+    border:0;
+    border-bottom:1px solid #bfbfbf; /* línea entre Código y Revisión */
+    padding:0 1px;
+    font-size:13px;
+    line-height:1.2;
+    white-space:nowrap;
+  }
+  .right-rows tr:last-child td { border-bottom:0; }
+  .right-bottom { padding:5px 6px; font-size:11px; line-height:1.1; white-space:nowrap; }
 
-    /* Columna 3: partida en DOS celdas (arriba: Código/Revisión; abajo: Página) */
-    .right-top, .right-bottom {
-      width:150px;
-      padding:0;                 /* sin relleno para que el borde externo alinee */
-    }
+  .fecha-header { width:100%; border-collapse:collapse; margin-top:1px; }
+  .fecha-header td { border:none; padding:0; text-align:right; font-weight:700; font-size:11px; }
 
-    /* Tabla interna SIN contorno; solo separadores horizontales */
-    .right-rows {
-      width:100%;                /* (no uses 101%) */
-      border-collapse: collapse;
-      border: none;              /* sin marco externo */
-    }
-    .right-rows td {
-      border: 0;                 /* limpia todo */
-      border-bottom: 1px solid #bfbfbf;  /* solo línea entre Código y Revisión */
-      padding: 0px 1px;
-      font-size: 13px;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
-    .right-rows tr:last-child td {
-      border-bottom: 0;          /* la última (Revisión) sin línea inferior */
-    }
+  /* ===== Tabla principal ===== */
+  table.listado { width:100%; border-collapse:collapse; margin-top:-20px; }
+  table.listado th, table.listado td { border:1px solid #000; padding:1px; }
+  thead th { background:#00A6DF; font-weight:700; text-align:center; }
+  .col-num    { width:20px;  text-align:center; }
+  .col-codigo { width:145px; text-align:center; }
+  .col-rev    { width:50px;  text-align:center; }
+  .col-fecha  { width:120px; text-align:center; text-transform:lowercase; }
+  .w-cod      { text-align:center; vertical-align:middle; white-space:nowrap; }
 
-    /* Celda de "Página" usa el borde del header, no añadas bordes internos */
-    .right-bottom {
-      padding: 5px 6px;
-      font-size: 12px;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
+  /* Repetir thead en cada página */
+  thead { display: table-header-group; }
+  tr    { page-break-inside: avoid; }
 
+  /* Footer en una sola línea */
+  .foot{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;   /* respeta los width de cada celda */
+    height:12mm;
+  }
+  .foot td{
+    padding:0;
+    vertical-align:middle;
+    font-size:10px;
+    line-height:1;        /* ayuda a que no “salte” */
+  }
+  .foot .left  { width:25%; text-align:left;  }
+  .foot .mid   { width:55%; text-align:center;}
+  .foot .right { width:20%; text-align:right; }
+  .nowrap{ white-space:nowrap; }  /* <- clave */
 
-    /* Abajo: solo la palabra "Página" (los números van por script) */
-    .right-bottom{ padding:5px 6px; font-size:10.5px; line-height:1.1; white-space:nowrap; }
-
-    /* ===== Tabla azul ===== */
-    table.listado { width:100%; border-collapse:collapse; }
-    table.listado { margin-top: -20px; } 
-    table.listado th, table.listado td { border:1px solid #000; padding:1px; }
-    table.listado td.w-cod{
-      text-align: center;
-      vertical-align: middle;
-      white-space: nowrap;   /* evita cortes en ITTUX-CA-MC-001-01 */
-    }
-    thead th { background:#00A6DF; font-weight:700; text-align:center; }
-    //thead th.col-num { background:#0085B6; }
-    .col-num{ width:20px; text-align:center; }
-    .col-codigo{ width:145px; text-align:center; }
-    .col-rev{ width:50px; text-align:center; }
-    .col-fecha{ width:120px; text-align:center; text-transform:lowercase; }
-
-    /* Repetir thead en cada página (ya sin chocar con el header) */
-    thead { display: table-header-group; }
-    tr { page-break-inside: avoid; }
-
-    /* ===== Footer fijo (opcional, sin paginación en el cuadro) ===== */
-    footer {
-        position: fixed;
-        left: 16mm; right: 16mm;
-        bottom: -16mm; height: 16mm;
-        font-size:10px;
-    }
-    .foot { display:table; width:100%; }
-    .foot > div { display:table-cell; vertical-align:middle; }
-    .foot .left { text-align:left; }
-    .foot .mid { text-align:center; }
-    .foot .right { text-align:right; }
-
-    /* ===== Bloque de firmas al final ===== */
-    .firmas { width:100%; margin-top:70px; page-break-inside: avoid; }
-    .firmas td { width:50%; text-align:center; padding:2px 8px; }
-
-    /* Línea (texto normal) */
-    .sig-line{
-      display:inline-block;
-      min-width:320px;
-      border-top:1px solid #000;
-      padding-top:1px;
-      font-weight:400;       
-    }
-
-    /* Nombre (en negritas) */
-    .sig-sub{
-      margin-top:4px;
-      font-weight:700;  
-    }
+  /* ===== Firmas ===== */
+  .firmas { width:100%; margin-top:70px; page-break-inside: avoid; }
+  .firmas td { width:50%; text-align:center; padding:2px 8px; }
+  .sig-line{
+    display:inline-block;
+    min-width:320px;
+    border-top:1px solid #000;
+    padding-top:1px;
+    font-weight:400;
+  }
+  .sig-sub{ margin-top:4px; font-weight:700; }
 </style>
 </head>
 <body>
 
-<header>
+{{-- ===== Header mPDF (se repite en todas las páginas) ===== --}}
+<htmlpageheader name="header1">
   <table class="encabezado">
-    <!-- FILA 1 -->
     <tr>
-      <!-- Col 1: LOGO (ocupa 2 filas) -->
       <td class="logo-cell" rowspan="2">
         @if (file_exists($logoITTux))
           <img src="{{ $logoITTux }}" class="logo" alt="ITTux">
         @endif
       </td>
-
-      <!-- Col 2 (fila 1): TÍTULO -->
       <td class="mid">
         <div class="titulo">
-          Nombre del documento: {{ $formTitle ?? 'Formato para la Lista Maestra de Documentos Internos Controlados' }}
+          <strong>Nombre del documento: {{ $formTitle ?? 'Formato para la Lista Maestra de Documentos Internos Controlados' }}</strong><br>
         </div>
       </td>
-
-      <!-- Col 3 (fila 1): CÓDIGO y REVISIÓN (dos filas internas) -->
       <td class="right-top">
         <table class="right-rows">
           <tr><td><strong>Código:</strong> {{ $formCode ?? 'ITTUX-CA-PG-001-02' }}</td></tr>
-          <tr><td><strong>Revisión:</strong> {{ $formRev ?? '0' }}</td></tr>
+          <tr><td><strong>Revisión:</strong> <strong>{{ $formRev ?? '0' }}</strong></td></tr>
         </table>
       </td>
     </tr>
-
-    <!-- FILA 2 -->
     <tr>
-      <!-- Col 2 (fila 2): REFERENCIA ISO -->
       <td class="mid">
         <div class="ref">
           <strong>Referencia a la Norma {{ $norma ?? 'ISO 9001:2015' }}:</strong><br>
           <strong>Requisito: {{ $requisito ?? '7.5.3' }}</strong>
         </div>
       </td>
-
-      <!-- Col 3 (fila 2): PÁGINA -->
       <td class="right-bottom">
-        <strong>Página</strong> <!-- "X de Y" lo pinta el script -->
+        <strong>Página</strong> <strong>{{ '{PAGENO} de {nbpg}' }}</strong> 
       </td>
     </tr>
   </table>
-  <!-- Franja FECHA dentro del header, se repetirá en todas las páginas -->
+
   <table class="fecha-header">
     <tr>
       <td>FECHA DE ACTUALIZACIÓN: {{ $h($fechaActualizacion ?? '') }}</td>
     </tr>
   </table>
-</header>
+</htmlpageheader>
 
+{{-- ===== Footer mPDF (se repite en todas las páginas) ===== --}}
+<htmlpagefooter name="footer1">
+  <table class="foot">
+    <tr>
+      <td class="left">23-marzo-2018</td>
+      <td class="mid">
+        <span class="nowrap">
+          Toda copia en PAPEL es un “Documento No Controlado” a excepción del original.
+        </span>
+      </td>
+      <td class="right">Rev. {{ $formRev ?? '0' }}</td>
+    </tr>
+  </table>
+</htmlpagefooter>
 
-
-<footer>
-    <div class="foot">
-        <div class="left">23-marzo-2018</div>
-        <div class="mid">Toda copia en PAPEL es un “Documento No Controlado” a excepción del original.</div>
-        <div class="right">Rev. {{ $formRev ?? '0' }}</div>
-    </div>
-</footer>
-
+{{-- ===== Contenido ===== --}}
 <table class="listado">
-    <thead>
-        <tr>
-            <th class="col-num">N°</th>
-            <th>Nombre del documento controlado</th>
-            <th class="col-codigo">Código</th>
-            <th class="col-rev">N° de revisión</th>
-            <th class="col-fecha">fecha de autorización</th>
-        </tr>
-    </thead>
-    <tbody>
+  <thead>
+    <tr>
+      <th class="col-num">N°</th>
+      <th>Nombre del documento controlado</th>
+      <th class="col-codigo">Código</th>
+      <th class="col-rev">N° de revisión</th>
+      <th class="col-fecha">fecha de autorización</th>
+    </tr>
+  </thead>
+  <tbody>
     @forelse($docs as $d)
-        <tr>
-            <td class="col-num">{{ $n++ }}.</td>
-            <td>{{ $h($d->nombre) }}</td>
-            <td class="w-cod">{{ solo_na($d->codigo) }}</td>
-            <td class="col-rev">{{ $h($d->revision) }}</td>
-            <td class="col-fecha">
-                @php
-                    $f = $d->fecha_autorizacion
-                        ? Carbon::parse($d->fecha_autorizacion)->isoFormat('D-MMMM-YYYY')
-                        : '';
-                @endphp
-                {{ mb_strtolower($f, 'UTF-8') }}
-            </td>
-        </tr>
+      <tr>
+        <td class="col-num">{{ $n++ }}.</td>
+        <td>{{ $h($d->nombre) }}</td>
+        <td class="w-cod">{{ solo_na($d->codigo) }}</td>
+        <td class="col-rev">{{ $h($d->revision) }}</td>
+        <td class="col-fecha">
+          @php
+            $f = $d->fecha_autorizacion
+                ? Carbon::parse($d->fecha_autorizacion)->isoFormat('D-MMMM-YYYY')
+                : '';
+          @endphp
+          {{ mb_strtolower($f, 'UTF-8') }}
+        </td>
+      </tr>
     @empty
-        <tr><td colspan="5" style="text-align:center; padding:16px;">Sin resultados para los filtros actuales.</td></tr>
+      <tr>
+        <td colspan="5" style="text-align:center; padding:16px;">
+          Sin resultados para los filtros actuales.
+        </td>
+      </tr>
     @endforelse
-    </tbody>
+  </tbody>
 </table>
 
 <table class="firmas">
@@ -257,23 +212,6 @@ function solo_na($v) {
     </td>
   </tr>
 </table>
-
-
-<script type="text/php">
-if (isset($pdf)) {
-  $font = $fontMetrics->get_font("DejaVu Sans", "normal");
-  $size = 10.5;
-
-  // Con @page top=150 y header height=120.
-  // Mueve $x unos puntos a la IZQUIERDA si quieres que "1 de N" quede más cerca de la palabra "Página".
-  $x = $pdf->get_width() - 16*2.83465 - 109;   // ~212pt desde el borde derecho
-  $y = 64;                                      // ajusta 72–80 si hace falta
-  $pdf->page_text($x, $y, "{PAGE_NUM} de {PAGE_COUNT}", $font, $size, [0,0,0]);
-}
-</script>
-
-
-
 
 </body>
 </html>

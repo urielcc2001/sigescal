@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
             'solicitudes.export',
             'lista-maestra.view',
             'org.personal.view',
+            'lista-maestra.files.download',
         ]);
 
         // coordinación de calidad

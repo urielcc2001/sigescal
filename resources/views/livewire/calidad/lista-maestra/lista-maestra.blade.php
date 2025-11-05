@@ -72,6 +72,8 @@
                         Descargar PDF
                     </flux:button>
                 @endcan
+                    @livewire('calidad.lista-maestra.upload-folder', key('lm-upload-folder'))
+
             </div>
         </div>
     </div>
