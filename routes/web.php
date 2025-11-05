@@ -13,6 +13,7 @@ use App\Livewire\Calidad\Quejasugerencia\Quejas;
 use App\Livewire\Calidad\Quejasugerencia\EstadoQuejas;
 use App\Livewire\Calidad\Quejasugerencia\RevisarQuejas;
 use App\Http\Controllers\ComplaintPdfController;
+use App\Http\Controllers\MasterZipController;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
@@ -32,6 +33,13 @@ Route::middleware('auth:students')->group(function () {
         ->name('students.quejas.index');
 });
 
+Route::middleware(['auth', 'can:lista-maestra.files.download'])->group(function () {
+    Route::get('/lista-maestra/zip', [MasterZipController::class, 'zip'])
+        ->name('lista-maestra.folder.zip');  
+
+    Route::get('/lista-maestra/zip-all', [MasterZipController::class, 'zipAll'])
+        ->name('lista-maestra.zip-all');
+});
 
 
 Route::middleware(['auth'])->group(function (): void {

@@ -44,11 +44,11 @@
                 <flux:button href="{{ route('login') }}" variant="primary" wire:navigate>
                     {{ __('global.log_in') }}
                 </flux:button>
-                @if (Route::has('register'))
+                {{-- @if (Route::has('register'))
                     <flux:button href="{{ route('register') }}" wire:navigate>
                         {{ __('global.register') }}
                     </flux:button>
-                @endif
+                @endif--}}
             @endguest
         </nav>
     @endif
