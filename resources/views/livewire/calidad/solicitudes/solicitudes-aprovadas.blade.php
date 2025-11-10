@@ -176,11 +176,9 @@
         <div class="pt-2 flex flex-col items-center gap-1">
             @can('solicitudes.export')
                 @if($solicitud->estado === 'aprobada')
-                    <flux:button
-                        wire:click="descargarFormato"
-                        variant="primary"
-                        class="!bg-indigo-600 hover:!bg-indigo-700 !text-white">
-                        Descargar formato
+                    <flux:button :href="route('calidad.solicitudes.estado.formato.pdf', $solicitud)" target="_blank"
+                                class="!bg-indigo-600 hover:!bg-indigo-700 !text-white">
+                    Descargar formato
                     </flux:button>
                 @else
                     <flux:button

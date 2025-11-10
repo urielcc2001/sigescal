@@ -46,34 +46,48 @@
             </select>
         </div>
 
+        {{-- Switch de descargas (solo quien tenga lista-maestra.download.manage) --}}
+        @can('lista-maestra.download.manage')
+        <div class="shrink-0">
+            <label class="block text-sm font-medium">Control de descargas</label>
+            <div class="mt-1 flex items-center gap-2">
+            @if($downloadsAllowed)
+                <flux:button icon="lock-open" variant="primary" @click="$wire.toggleCombinedDownloads()">
+                Habilitadas (PDF + ZIP)
+                </flux:button>
+            @else
+                <flux:button icon="lock-closed" variant="danger" @click="$wire.toggleCombinedDownloads()">
+                Deshabilitadas (PDF + ZIP)
+                </flux:button>
+            @endif
+            <span class="text-xs text-zinc-500">No afecta a Super Admin.</span>
+            </div>
+        </div>
+        @endcan
+
         {{-- Botón Exportar --}}
         <div class="shrink-0">
-            {{-- Label fantasma para alinear verticalmente --}}
-            <label class="block text-sm font-medium opacity-0 select-none">
-                Acción
-            </label>
-
+            <label class="block text-sm font-medium opacity-0 select-none">Acción</label>
             <div class="mt-1">
-                @can('lista-maestra.export')
-                    <flux:button
-                        icon="document-arrow-down"
-                        variant="outline"
-                        class="w-full sm:w-auto"
-                        @click="$wire.openExportModal()">
+                @if(auth()->user()?->hasRole('Super Admin'))
+                    <flux:button icon="document-arrow-down" variant="outline" class="w-full sm:w-auto"
+                                @click="$wire.openExportModal()">Descargar PDF</flux:button>
+                @elseif(auth()->user()?->can('lista-maestra.download'))
+                    <flux:button icon="document-arrow-down" variant="outline" class="w-full sm:w-auto"
+                                title="Descarga con la fecha más reciente"
+                                @click="$wire.quickExportLatest()">Descargar PDF</flux:button>
+                @elseif(auth()->user()?->can('lista-maestra.view'))
+                    <flux:button icon="lock-closed" variant="outline"
+                                class="w-full sm:w-auto opacity-60 cursor-not-allowed"
+                                disabled
+                                title="Descargas deshabilitadas por el administrador">
                         Descargar PDF
                     </flux:button>
-                @elsecan('lista-maestra.view')
-                    <flux:button
-                        icon="lock-closed"
-                        variant="outline"
-                        class="w-full sm:w-auto opacity-70 cursor-not-allowed"
-                        disabled
-                        title="No tienes permiso para exportar la Lista Maestra">
-                        Descargar PDF
-                    </flux:button>
-                @endcan
-                    @livewire('calidad.lista-maestra.upload-folder', key('lm-upload-folder'))
+                    <div class="mt-1 text-xs text-zinc-500">Descargas deshabilitadas por el administrador.</div>
+                @endif
 
+                {{-- Tu botón/componente de ZIP; aplica la misma lógica con can('lista-maestra.files.download') --}}
+                @livewire('calidad.lista-maestra.upload-folder', key('lm-upload-folder'))
             </div>
         </div>
     </div>

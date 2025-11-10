@@ -23,7 +23,7 @@
         <div class="grid md:grid-cols-3 gap-4">
             <div>
                 <label class="block text-sm font-medium">FOLIO N°</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50"
+                <input type="text" class="mt-1 w-full rounded-md border p-2"
                        wire:model="folio" readonly>
                 @error('folio') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
@@ -48,22 +48,35 @@
         <div class="grid md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Código del documento</label>
-                <input type="text"
-                    class="mt-1 w-full rounded-md border p-2"
-                    list="lista-codigos"
-                    placeholder="Escribe o selecciona..."
-                    wire:model.live="codigo">
+
+                {{-- envoltura para posicionar el botón --}}
+                <div class="mt-1 relative">
+                    <input type="text"
+                        class="w-full rounded-md border p-2 pr-9"
+                        list="lista-codigos"
+                        placeholder="Escribe o selecciona..."
+                        wire:model.live="codigo"
+                        autocomplete="off">
+
+                    {{-- botón X para limpiar --}}
+                    <button type="button"
+                            wire:click="clearCodigo"
+                            class="absolute inset-y-0 right-2 my-auto text-zinc-400 hover:text-zinc-600"
+                            aria-label="Limpiar">✕</button>
+                </div>
+
                 <datalist id="lista-codigos">
                     @foreach($documentos as $doc)
                         <option value="{{ $doc->codigo }}" label="{{ $doc->codigo }} — {{ \Illuminate\Support\Str::limit($doc->nombre, 80) }}"></option>
                     @endforeach
                 </datalist>
+
                 @error('documento_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium">Área</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50"
+                <input type="text" class="mt-1 w-full rounded-md border p-2"
                     value="{{ optional($areas->firstWhere('id', $area_id))->nombre }}" readonly>
                 @error('area_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
@@ -77,17 +90,30 @@
         <div class="grid md:grid-cols-3 gap-4 mt-4">
             <div>
                 <label class="block text-sm font-medium">Revisión actual</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50"
+                <input type="text" class="mt-1 w-full rounded-md border p-2"
                     value="{{ $docSel?->revision }}" readonly>
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium">Título</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50"
+                <input type="text" class="mt-1 w-full rounded-md border p-2"
                     value="{{ $docSel?->nombre }}" readonly>
             </div>
         </div>
     </div>
 
+    <div class="max-w-sm">
+        @if($documento_id)
+        <div class="mt-4">
+            <label class="block text-sm font-medium">Responsable del proceso</label>
+            <select class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]" wire:model.live="responsable_slug">
+            @foreach($responsablesLabels as $slug => $label)
+                <option value="{{ $slug }}">{{ $label }}</option>
+            @endforeach
+            </select>
+            @error('responsable_slug') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+        </div>
+        @endif
+    </div>
 
     {{-- Bloque: Tipo de trámite --}}
     <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
@@ -95,7 +121,7 @@
 
         <div class="max-w-sm">
             <label class="block text-sm font-medium">Selecciona el tipo</label>
-            <select class="mt-1 w-full rounded-md border p-2" wire:model="tipo">
+            <select class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]" wire:model="tipo">
                 @foreach($tipos as $t)
                     <option value="{{ $t }}">{{ strtoupper($t) }}</option>
                 @endforeach

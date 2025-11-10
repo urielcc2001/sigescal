@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
             'solicitudes.export',
             'lista-maestra.view',
             'org.personal.view',
+            'lista-maestra.download',
             'lista-maestra.files.download',
         ]);
 
@@ -34,6 +35,7 @@ class RoleSeeder extends Seeder
         $coord->syncPermissions([
             'lista-maestra.view',
             'org.personal.view',
+            'lista-maestra.download',
             'quejas.review',
         ]);
     }

@@ -65,4 +65,56 @@ class ListaMaestraPdfController extends Controller
 
         return $pdf->download('Lista_Maestra.pdf'); // o ->stream('Lista_Maestra.pdf')
     }
+
+    public function downloadQuick(Request $request)
+    {
+        // Acepta ambos nombres de parámetros para no tocar Livewire
+        $areaId = $request->integer('areaId') ?: $request->integer('area_id');
+        $search = (string) ($request->has('search') ? $request->get('search', '') : $request->get('q', ''));
+
+        $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        $needle = '%'.$search.'%';
+
+        $docs = \App\Models\ListaMaestra::select('id','codigo','nombre','revision','fecha_autorizacion','area_id')
+            ->when($areaId, fn($q) => $q->where('area_id', $areaId))
+            ->when($search !== '', fn($q) => $q->where(fn($qq) =>
+                $qq->where('codigo', $likeOp, $needle)->orWhere('nombre', $likeOp, $needle)
+            ))
+            ->orderBy('id','asc')
+            ->get();
+
+        $dateParam = (string) $request->get('date', '');
+        if ($dateParam !== '') {
+            $fecha = \Carbon\Carbon::createFromFormat('Y-m-d', $dateParam);
+        } else {
+            $max = $docs->max('fecha_autorizacion') ?? now()->toDateString();
+            $fecha = \Carbon\Carbon::parse($max);
+        }
+
+        $fechaActualizacion = mb_strtoupper($fecha->isoFormat('D [DE] MMMM [DE] YYYY'), 'UTF-8');
+
+        $data = [
+            'docs' => $docs,
+            'fechaActualizacion' => $fechaActualizacion,
+            'formTitle' => 'Formato para la Lista Maestra de Documentos Internos Controlados',
+            'formCode'  => 'ITTUX-CA-PG-001-02',
+            'formRev'   => '0',
+            'norma'     => 'ISO 9001:2015',
+            'requisito' => '7.5.3',
+        ];
+
+        $pdf = \niklasravnsborg\LaravelPdf\Facades\Pdf::loadView('pdf.lista-maestra', $data, [], [
+            'format' => 'Letter',
+            'orientation' => 'P',
+            'tempDir' => storage_path('app/mpdf-temp'),
+            'instanceConfigurator' => function (\Mpdf\Mpdf $mpdf) {
+                $mpdf->SetProtection([], '', 'ITTUX-SGC-OWNER');
+                $mpdf->SetTitle('Lista Maestra');
+                $mpdf->SetAuthor('ITTux SGC');
+            },
+        ]);
+
+        return $pdf->download('Lista_Maestra.pdf');
+    }
+
 }

@@ -44,10 +44,12 @@ class PermissionSeeder extends Seeder
             'lista-maestra.export', // exportar PDF
             'lista-maestra.edit',   // editar
             'lista-maestra.delete', // borrrar 
+            'lista-maestra.download', // descargar PDF
             // Permisos para la carga de documentos 
             'lista-maestra.upload',
             'lista-maestra.files.view',
             'lista-maestra.files.download',
+            'lista-maestra.download.manage',
 
             // Modulo Organización / Personal 
             'org.personal.view',    // ver organigrama

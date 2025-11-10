@@ -9,6 +9,9 @@ use Illuminate\Contracts\View\View;
 use Livewire\WithPagination;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class ListaMaestra extends PageWithDashboard
 {
@@ -36,14 +39,115 @@ class ListaMaestra extends PageWithDashboard
     public ?string $fecha_autorizacion = null; 
     public ?string $deletingLabel = null;
 
+    // ===== Descargas (switch de administración) =====
+    public bool $canManageDownloads = false; // permiso: lista-maestra.download.manage
+    public bool $downloadsAllowed = false;   // único switch para PDF y ZIP
+
     // ======== Lifecycle de filtros ========
     public function updatedAreaId(): void { $this->resetPage(); }
     public function updatedSearch(): void { $this->resetPage(); }
 
     public function openExportModal(): void
     {
+        // Si NO tiene permiso de exportación, descarga directa con la fecha más reciente
+        if (! auth()->user()?->can('lista-maestra.export')) {
+            $this->quickExportLatest();
+            return;
+        }
+
+        // Admin/export: abre modal con fecha por defecto
         $this->exportDate = $this->computeDefaultExportDate(); // YYYY-MM-DD
         $this->showExportModal = true;
+    }
+
+    // 2) NUEVO: descarga directa para usuarios sin modal
+    public function quickExportLatest()
+    {
+        $this->exportDate = $this->computeDefaultExportDate();
+
+        return redirect()->route('calidad.lista-maestra.pdf.quick', array_filter([
+            'area_id' => $this->areaId,
+            'q'       => $this->search !== '' ? $this->search : null,
+            'date'    => $this->exportDate,
+        ], fn($v) => !is_null($v) && $v !== ''));
+    }
+
+    public function mount(): void
+    {
+        $this->canManageDownloads = auth()->user()?->can('lista-maestra.download.manage') ?? false;
+        $this->downloadsAllowed = $this->readCombinedDownloadState();
+    }
+
+    // ===== Helper: roles objetivo (todos menos Super Admin) =====
+    protected function targetRoles(bool $includeSuperAdmin = false)
+    {
+        return Role::query()
+            ->when(!$includeSuperAdmin, fn($q) => $q->where('name', '!=', 'Super Admin'))
+            ->with('permissions') 
+            ->get();
+    }
+
+    protected function readCombinedDownloadState(): bool
+    {
+        $roles = $this->targetRoles();
+        $hasPdf = $roles->contains(fn($r) => $r->hasPermissionTo('lista-maestra.download'));
+        $hasZip = $roles->contains(fn($r) => $r->hasPermissionTo('lista-maestra.files.download'));
+        return $hasPdf && $hasZip;
+    }
+
+    // Alterna ambos permisos en conjunto para TODOS los roles objetivo (no afecta a Super Admin)
+    public function toggleCombinedDownloads(): void
+    {
+        abort_unless($this->canManageDownloads, 403);
+
+        $new = ! $this->downloadsAllowed;
+
+        // Asegura que tomas las permissions del guard correcto
+        $guard = config('auth.defaults.guard', 'web');
+        $permPdf = Permission::findByName('lista-maestra.download', $guard);
+        $permZip = Permission::findByName('lista-maestra.files.download', $guard);
+
+        // Carga roles objetivo con sus permisos (sin Super Admin)
+        $roles = Role::query()
+            ->where('name', '!=', 'Super Admin')
+            ->with('permissions') // evita lazy loading
+            ->get();
+
+        foreach ($roles as $role) {
+            // Obtenemos el set actual de permisos por nombre
+            $current = $role->permissions->pluck('name');
+
+            if ($new) {
+                // Agregamos PDF y ZIP si no están
+                $next = $current
+                    ->merge([$permPdf->name, $permZip->name])
+                    ->unique()
+                    ->values();
+            } else {
+                // Quitamos PDF y ZIP si están
+                $next = $current
+                    ->reject(fn ($name) => in_array($name, [$permPdf->name, $permZip->name], true))
+                    ->values();
+            }
+
+            // Sincronizamos de una, evitando toques internos que disparen lazy-loading
+            $role->syncPermissions($next);
+            // Si quieres, refresca la relación en memoria para futuras lecturas
+            $role->unsetRelation('permissions');
+            $role->load('permissions');
+        }
+
+        // Limpia caché de Spatie
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->downloadsAllowed = $new;
+
+        $this->dispatch('toastifyAlert', [
+            'type' => $new ? 'success' : 'warning',
+            'message' => $new
+                ? 'Descargas (PDF y ZIP) habilitadas para usuarios.'
+                : 'Descargas (PDF y ZIP) deshabilitadas para usuarios.',
+        ]);
     }
 
     private function computeDefaultExportDate(): string
@@ -63,6 +167,8 @@ class ListaMaestra extends PageWithDashboard
 
         return $maxDate ? Carbon::parse($maxDate)->toDateString() : now()->toDateString();
     }
+
+
 
     public function exportPdf()
     {

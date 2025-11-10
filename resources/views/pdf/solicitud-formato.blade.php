@@ -139,9 +139,20 @@ th, td { padding:6px; vertical-align:top; }
 .img-in-box { max-width:170px; max-height:170px; object-fit:contain; border:1px solid #ddd; padding:2px; }
 .img-caption { margin-top:3px; font-size:9px; color:#555; word-break:break-all; }
 
+/* Línea de checks tipo formulario */
+.checks-inline{ width:100%; border-collapse:collapse; table-layout:auto; }
+.checks-inline td{ padding:0 8px; vertical-align:middle; }
+.checks-inline .lbl{ font-weight:700; padding-right:6px; white-space:nowrap; }
+.checks-inline .mini{ font-weight:700; white-space:nowrap; }
+.checks-inline .box{ width:24px; height:24px; border:1.4px solid #000; text-align:center; }
+.checks-inline .box > span{ display:inline-block; line-height:24px; font-weight:700; }
+.checks-inline .gap{ width:48px; } /* separa los dos bloques */
+
 /* ===== Firmas ===== */
 .firmas th, .firmas td { border:1px solid #000; padding:8px; }
 .firmas th { background:#efefef; text-align:center; }
+.firmas { table-layout: fixed; }
+.firmas tbody td:nth-child(3){ padding:40px 8px; } /* más área para la firma */
 
 /* ===== Pie: logo | texto largo (multi-línea) | bloque registro | logo ===== */
 .footer-bar{ width:100%; border-collapse:collapse; }
@@ -364,16 +375,23 @@ th, td { padding:6px; vertical-align:top; }
 <div class="upper lbl mt-4 mb-1">JUSTIFICACIÓN DE LA SOLICITUD:</div>
 <div class="textarea-box" style="min-height:100px;">{{ $solicitud->justificacion }}</div>
 
-{{-- CAPACITACIÓN / DIFUSIÓN --}}
-<table class="table mt-4">
-    <tr>
-        <th style="width:50%; text-align:left;">REQUIERE CAPACITACIÓN</th>
-        <th style="text-align:left;">DIFUSIÓN</th>
-    </tr>
-    <tr>
-        <td>SI: <span class="check-box">{{ $box($capSi) }}</span>&nbsp;&nbsp;&nbsp;&nbsp; NO: <span class="check-box">{{ $box(!$capSi) }}</span></td>
-        <td>SI: <span class="check-box">{{ $box($difSi) }}</span>&nbsp;&nbsp;&nbsp;&nbsp; NO: <span class="check-box">{{ $box(!$difSi) }}</span></td>
-    </tr>
+{{-- CAPACITACIÓN / DIFUSIÓN (una sola línea) --}}
+<table class="checks-inline">
+  <tr>
+    <td class="lbl">REQUIERE CAPACITACIÓN:</td>
+    <td class="mini">SI</td>
+    <td class="box"><span>{{ $capSi ? 'X' : '' }}</span></td>
+    <td class="mini">NO</td>
+    <td class="box"><span>{{ !$capSi ? 'X' : '' }}</span></td>
+
+    <td class="gap"></td>
+
+    <td class="lbl">DIFUSIÓN:</td>
+    <td class="mini">SI</td>
+    <td class="box"><span>{{ $difSi ? 'X' : '' }}</span></td>
+    <td class="mini">NO</td>
+    <td class="box"><span>{{ !$difSi ? 'X' : '' }}</span></td>
+  </tr>
 </table>
 
 {{-- FIRMAS --}}
@@ -381,10 +399,10 @@ th, td { padding:6px; vertical-align:top; }
 <table class="firmas">
   <!-- <<< controla anchos de TODAS las filas >>> -->
   <colgroup>
-    <col style="width:30%;">  <!-- Personal de la organización -->
-    <col style="width:35%;">  <!-- Nombre (más ancho) -->
-    <col style="width:25%;">  <!-- Firma (más angosto) -->
-    <col style="width:10%;">  <!-- Fecha (más angosto) -->
+    <col style="width:26%;">  <!-- Personal de la organización (antes 30%) -->
+    <col style="width:29%;">  <!-- Nombre (antes 35%) -->
+    <col style="width:35%;">  <!-- Firma (antes 25%)  -->
+    <col style="width:10%;">  <!-- Fecha -->
   </colgroup>
 
   <thead>
