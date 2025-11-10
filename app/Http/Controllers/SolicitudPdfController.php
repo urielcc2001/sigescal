@@ -37,8 +37,8 @@ class SolicitudPdfController extends Controller
 
         // Subdirector según área (usa la relación ya cargada)
         $areaCodigo   = strtoupper(trim(optional($solicitud->area)->codigo ?? ''));
-        $subdirSlug   = $this->subdirectorSlugPorCodigo($areaCodigo);
-        $subdirNombre = $this->nombreVigentePorSlug($subdirSlug) ?? 'SUBDIRECCIÓN (S/F)';
+        $respSlug     = $solicitud->responsable_slug ?: $this->subdirectorSlugPorCodigo($areaCodigo);
+        $subdirNombre = $this->nombreVigentePorSlug($respSlug) ?? 'SUBDIRECCIÓN (S/F)';
 
         // Imágenes: a rutas absolutas y existentes
         $diceImgs = $solicitud->imagenesDice->map(function ($a) {
@@ -85,8 +85,8 @@ class SolicitudPdfController extends Controller
             'VI' => 'subdir-vinculacion',
             'PL' => 'subdir-vinculacion',
             'AD' => 'subdir-servicios',
-            'IR' => 'subdir-servicios',
-            'EG' => 'subdir-servicios',
+            'IR' => 'subdir-vinculacion',
+            'EG' => 'subdir-vinculacion',
             'CA' => 'subdir-vinculacion',
         ];
 

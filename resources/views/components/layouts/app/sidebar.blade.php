@@ -38,11 +38,13 @@
                         {{ __('roles.title') }}
                     </flux:navlist.item>
                 @endcan
+                {{--
                 @can('view permissions')
                     <flux:navlist.item icon="shield-check" :href="route('admin.permissions.index')" :current="request()->routeIs('admin.permissions.*')">
                         {{ __('permissions.title') }}
                     </flux:navlist.item>
                 @endcan
+                --}}
             </flux:navlist.group>
         @endcanany
     </flux:navlist>

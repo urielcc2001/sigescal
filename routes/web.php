@@ -79,6 +79,10 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('calidad/lista-maestra/pdf', [ListaMaestraPdfController::class, 'download'])
         ->middleware('can:lista-maestra.export')
         ->name('calidad.lista-maestra.pdf');
+    
+    Route::get('calidad/lista-maestra/pdf-quick', [ListaMaestraPdfController::class, 'downloadQuick'])
+    ->middleware('can:lista-maestra.download')
+    ->name('calidad.lista-maestra.pdf.quick');
 
     Route::get('calidad/quejas/{complaint}/pdf/ver', [ComplaintPdfController::class, 'show'])
         //->middleware('can:quejas.export')

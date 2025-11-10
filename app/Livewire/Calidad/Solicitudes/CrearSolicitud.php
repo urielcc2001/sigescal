@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\ListaMaestra;
 use App\Models\Solicitud;
 use App\Models\SolicitudAdjunto;
+use App\Models\OrgPosition;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class CrearSolicitud extends PageWithDashboard
     public string $justificacion = '';
     public bool $requiere_capacitacion = false;
     public bool $requiere_difusion = true;
+    public ?string $responsable_slug = null;
     public bool $showConfirm = false;
 
 
@@ -63,8 +65,22 @@ class CrearSolicitud extends PageWithDashboard
         if (!$isAdmin) {
             $areaQuery->whereIn('id', $userAreaIds ?: [-1]);
         }
-        $this->areas = $areaQuery->get(['id','nombre']);
+        $this->areas = $areaQuery->get(['id','nombre','codigo']);
+
+        // 1) Llenar opciones con el nombre vigente del puesto
+        $this->responsablesLabels = $this->cargarResponsablesConNombres();
+
+        // 2) Precargar responsable sugerido por el área (si existe)
+        $this->responsable_slug = $this->resolverResponsablePorAreaId($this->area_id);
     }
+
+    public array $responsableSlugs = [
+        'subdir-academica',
+        'subdir-vinculacion',
+        'subdir-servicios',
+    ];
+
+    public array $responsablesLabels = []; // se llena en mount()
 
     /** Autocompletar área al elegir código */
     public function updatedCodigo($value): void
@@ -74,10 +90,75 @@ class CrearSolicitud extends PageWithDashboard
         if ($doc) {
             $this->documento_id = $doc->id;
             $this->area_id      = $doc->area_id;
+
+            // Precarga si no había selección manual
+            if (!$this->responsable_slug) {
+                $this->responsable_slug = $this->resolverResponsablePorAreaId($this->area_id);
+            }
         } else {
             $this->documento_id = null;
             $this->area_id      = null;
+            $this->responsable_slug = null; // oculta el select y limpia
         }
+    }
+
+
+    private function cargarResponsablesConNombres(): array
+    {
+        // Trae los titulares vigentes de esos puestos
+        $positions = OrgPosition::with('vigente')
+            ->whereIn('slug', $this->responsableSlugs)
+            ->get(['id','slug']);
+
+        // Etiqueta bonita: "SUBDIRECCIÓN ACADÉMICA — NOMBRE"
+        $map = [];
+        foreach ($positions as $p) {
+            $nombre = optional($p->vigente)->nombre ?: 'S/F';
+            $etiquetaBase = match ($p->slug) {
+                'subdir-academica'   => 'SUBDIRECCIÓN ACADÉMICA',
+                'subdir-vinculacion' => 'SUBDIRECCIÓN DE VINCULACIÓN',
+                'subdir-servicios'   => 'SUBDIRECCIÓN DE SERVICIOS ADMINISTRATIVOS',
+                default               => strtoupper($p->slug),
+            };
+            $map[$p->slug] = $etiquetaBase.' — '.$nombre;
+        }
+
+        // Por si faltara alguno en DB, garantiza todas las claves:
+        foreach ($this->responsableSlugs as $slug) {
+            $map[$slug] = $map[$slug] ?? (strtoupper($slug).' — S/F');
+        }
+
+        return $map;
+    }
+
+    private function resolverResponsablePorAreaId(?int $areaId): ?string
+    {
+        if (!$areaId) return null;
+
+        $area = collect($this->areas)->first(fn ($a) =>
+            (int)(is_array($a) ? ($a['id'] ?? 0) : $a->id) === (int) $areaId
+        );
+
+        $codigo = strtoupper(trim(is_array($area) ? ($area['codigo'] ?? '') : ($area->codigo ?? '')));
+
+        $map = [
+            'AC' => 'subdir-academica',
+            'VI' => 'subdir-vinculacion',
+            'PL' => 'subdir-vinculacion',
+            'AD' => 'subdir-servicios',
+            'IR' => 'subdir-vinculacion',
+            'EG' => 'subdir-vinculacion',
+            'CA' => 'subdir-vinculacion',
+        ];
+
+        return $map[$codigo] ?? null;
+    }
+
+    public function clearCodigo(): void
+    {
+        $this->codigo = '';
+        $this->area_id = null;
+        $this->documento_id = null; // por si lo estabas seteando en otro lado
     }
 
     protected function rules(): array
@@ -93,7 +174,7 @@ class CrearSolicitud extends PageWithDashboard
             'justificacion'         => ['required','string','min:5'],
             'requiere_capacitacion' => ['boolean'],
             'requiere_difusion'     => ['boolean'],
-
+            'responsable_slug'      => ['nullable','in:subdir-academica,subdir-vinculacion,subdir-servicios'],
             // archivos
             'imagenesDice.*'        => ['image','max:2048'],       // 2 MB por imagen (ajusta)
             'imagenesDebeDecir.*'   => ['image','max:2048'],
@@ -136,6 +217,7 @@ class CrearSolicitud extends PageWithDashboard
                 'requiere_capacitacion' => $this->requiere_capacitacion,
                 'requiere_difusion'     => $this->requiere_difusion,
                 'estado'                => 'en_revision',
+                'responsable_slug'      => $this->responsable_slug,
             ]);
 
             // 2) Guardar adjuntos de cada sección

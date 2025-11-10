@@ -14,14 +14,14 @@
                     type="text"
                     wire:model.live.debounce.400ms="search"
                     class="w-full rounded-md border px-3 py-2"
-                    placeholder="Folio, documento, descripción..."
+                    placeholder="Codigo, documento, descripción..."
                 />
             </div>
 
             {{-- Estatus (ancho fijo) --}}
             <div class="shrink-0 w-44">
                 <label class="block text-sm font-medium">Estatus</label>
-                <select wire:model.live="estado" class="w-full rounded-md border px-3 py-2">
+                <select wire:model.live="estado" class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]">
                     <option value="">Todos</option>
                     <option value="en_revision">En revisión</option>
                     <option value="aprobada">Aprobada</option>
@@ -32,7 +32,7 @@
             {{-- Por página (ancho fijo) --}}
             <div class="shrink-0 w-28">
                 <label class="block text-sm font-medium">Por página</label>
-                <select wire:model.live="perPage" class="w-full rounded-md border px-3 py-2">
+                <select wire:model.live="perPage" class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]">
                     <option>10</option>
                     <option>25</option>
                     <option>50</option>
@@ -45,7 +45,7 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-zinc-900/40">
                     <tr>
-                        <th class="px-3 py-2 cursor-pointer" wire:click="sortBy('folio')">Código</th>
+                        <th class="px-3 py-2 cursor-pointer" wire:click="sortBy('documento_codigo')">Código</th>
                         <th class="px-3 py-2">Título</th>
                         <th class="px-3 py-2 cursor-pointer" wire:click="sortBy('fecha')">Fecha</th>
                         <th class="px-3 py-2">Estatus</th>
@@ -55,8 +55,8 @@
                 <tbody class="divide-y">
                     @forelse ($rows as $row)
                         <tr class="align-top">
-                            {{-- Código (folio) --}}
-                            <td class="px-3 py-2 font-medium">{{ $row->folio }}</td>
+                            {{-- Código (documento_codigo) --}}
+                            <td class="px-3 py-2 font-medium">{{ $row->documento?->codigo ?? '—' }}</td>
 
                             {{-- Título = nombre del documento --}}
                             <td class="px-3 py-2">
