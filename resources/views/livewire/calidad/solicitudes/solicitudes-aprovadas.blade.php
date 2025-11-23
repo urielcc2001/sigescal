@@ -49,34 +49,49 @@
             <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL DOCUMENTO</div>
 
             @php
-                $doc = $solicitud->documento; // ListaMaestra
-                $area = $solicitud->area;
+                $doc        = $solicitud->documento;   // ListaMaestra
+                $area       = $solicitud->area;
+                $isCreacion = $solicitud->tipo === 'creacion';
+
+                // Preferimos siempre lo que venga de lista_maestra;
+                // si no hay (caso creación), usamos los campos *_nuevo
+                $codigo   = $doc?->codigo   ?? ($isCreacion ? $solicitud->codigo_nuevo   : null);
+                $revision = $doc?->revision ?? ($isCreacion ? $solicitud->revision_nueva : null);
+                $titulo   = $doc?->nombre   ?? ($isCreacion ? $solicitud->titulo_nuevo   : null);
             @endphp
 
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium">Código del documento</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $doc?->codigo }}" readonly>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                        value="{{ $codigo }}"
+                        readonly>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium">Área</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $area?->nombre }}" readonly>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                        value="{{ $area?->nombre }}"
+                        readonly>
                 </div>
             </div>
 
             <div class="grid md:grid-cols-3 gap-4 mt-4">
                 <div>
                     <label class="block text-sm font-medium">Revisión actual</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $doc?->revision }}" readonly>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                        value="{{ $revision }}"
+                        readonly>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium">Título</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $doc?->nombre }}" readonly>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                        value="{{ $titulo }}"
+                        readonly>
                 </div>
             </div>
         </div>

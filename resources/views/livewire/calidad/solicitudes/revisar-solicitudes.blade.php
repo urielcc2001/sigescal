@@ -89,13 +89,25 @@
                 <tbody class="divide-y">
                     @forelse ($rows as $row)
                         <tr class="align-top">
-                            <td class="px-3 py-2 font-medium">{{ $row->documento?->codigo ?? '—' }}</td>
+                            <td class="px-3 py-2 font-medium">
+                                {{ $row->documento?->codigo ?? $row->codigo_nuevo ?? '—' }}
+                                @if($row->tipo === 'creacion')
+                                    <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold mr-1">
+                                        CREACIÓN
+                                    </span>
+                                @endif
+                            </td>
 
                             <td class="px-3 py-2">
                                 @if($row->documento)
                                     <div class="leading-tight">
                                         <div class="font-medium">{{ $row->documento->nombre }}</div>
                                         <div class="text-xs text-gray-500">{{ $row->documento->codigo }}</div>
+                                    </div>
+                                @elseif($row->tipo === 'creacion')
+                                    <div class="leading-tight">
+                                        <div class="font-medium">{{ $row->titulo_nuevo ?? 'Documento nuevo' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $row->codigo_nuevo ?? '—' }}</div>
                                     </div>
                                 @else
                                     <span class="text-gray-500">—</span>

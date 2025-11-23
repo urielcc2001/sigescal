@@ -25,6 +25,9 @@ class Solicitud extends Model
         'requiere_difusion',
         'estado',               // en_revision | aprobada | rechazada
         'responsable_slug',
+        'codigo_nuevo',
+        'titulo_nuevo',
+        'revision_nueva',
     ];
 
     protected $casts = [

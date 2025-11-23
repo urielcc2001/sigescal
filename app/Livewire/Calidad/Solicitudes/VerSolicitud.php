@@ -50,24 +50,51 @@ class VerSolicitud extends PageWithDashboard
     {
         if ($this->solicitud->estado !== 'en_revision') return;
 
-        DB::transaction(function () { 
-            // 1) (Opcional) Impacto en lista maestra si aplica
-            if ($this->solicitud->documento && $this->solicitud->tipo === 'modificacion') {
-                 $this->solicitud->documento->increment('revision');
-                 $this->solicitud->documento->update(['fecha_autorizacion' => now()]);
+        DB::transaction(function () {
+
+            // 1) Impacto en lista maestra según tipo
+            if ($this->solicitud->tipo === 'modificacion' && $this->solicitud->documento) {
+
+                // MODIFICACIÓN: incrementa revisión del documento existente
+                $this->solicitud->documento->increment('revision');
+                $this->solicitud->documento->update([
+                    'fecha_autorizacion' => now(),
+                ]);
+
+            } elseif ($this->solicitud->tipo === 'creacion' && ! $this->solicitud->documento_id) {
+
+                // CREACIÓN: crear nuevo registro en Lista Maestra
+                $nuevo = \App\Models\ListaMaestra::create([
+                    'codigo'   => $this->solicitud->codigo_nuevo,
+                    'nombre'   => $this->solicitud->titulo_nuevo,
+                    'revision' => $this->solicitud->revision_nueva,
+                    'area_id'  => $this->solicitud->area_id,
+                    'fecha_autorizacion' => now(),
+                ]);
+
+                // Enlazar solicitud con el documento recién creado
+                $this->solicitud->update([
+                    'documento_id' => $nuevo->id,
+                ]);
+
+                // Opcional: actualizar la relación en memoria (no toca BD)
+                $this->solicitud->setRelation('documento', $nuevo);
             }
 
-            // 2) Escribir historial
+            // 2) Historial
             Historial::create([
                 'solicitud_id' => $this->solicitud->id,
                 'estado'       => 'aprobada',
-                'comentario'   => $this->comentarioAprobacion ?: null, // opcional
+                'comentario'   => $this->comentarioAprobacion ?: null,
                 'user_id'      => auth()->id(),
             ]);
 
-            // 3) Estado actual en principal
+            // 3) Estado actual en Solicitud
             $this->solicitud->update(['estado' => 'aprobada']);
         });
+
+        // Opcional: recargar modelo por si se usa después en la misma vista
+        $this->solicitud->refresh();
 
         $this->showApproveModal = false;
         session()->flash('success', 'Solicitud aprobada.');
