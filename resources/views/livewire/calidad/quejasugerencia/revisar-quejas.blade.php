@@ -51,7 +51,7 @@
     </div>
 
     {{-- Tabla --}}
-    <div class="overflow-x-auto rounded-xl border bg-white dark:bg-neutral-900">
+    <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
         <table class="min-w-full text-sm">
             <thead class="bg-neutral-50 dark:bg-neutral-800/60">
                 <tr class="text-left">

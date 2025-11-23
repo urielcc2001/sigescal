@@ -9,12 +9,13 @@
 
         {{-- Filtros (1 sola línea) --}}
         <div class="flex flex-row items-end gap-3 flex-nowrap">
-            {{-- Buscar (ocupa la mayoría) --}}
+            {{-- Buscar  --}}
             <div class="flex-1 min-w-0">
                 <label class="block text-sm font-medium">Buscar</label>
                 <input type="text"
                        wire:model.live.debounce.400ms="search"
-                       class="w-full rounded-md border px-3 py-2"
+                       class="w-full rounded-md border border-zinc-300 bg-white p-2 pr-9 text-sm
+                            dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                        placeholder="Codigo, documento, solicitante, justificación..." />
             </div>
 
@@ -63,7 +64,7 @@
         @endif
 
         {{-- Tabla --}}
-        <div class="overflow-x-auto rounded-lg border">
+        <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-zinc-900/40">
                     <tr>
@@ -86,16 +87,28 @@
                         <th class="px-3 py-2">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
+                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse ($rows as $row)
                         <tr class="align-top">
-                            <td class="px-3 py-2 font-medium">{{ $row->documento?->codigo ?? '—' }}</td>
+                            <td class="px-3 py-2 font-medium">
+                                {{ $row->documento?->codigo ?? $row->codigo_nuevo ?? '—' }}
+                                @if($row->tipo === 'creacion')
+                                    <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold mr-1">
+                                        CREACIÓN
+                                    </span>
+                                @endif
+                            </td>
 
                             <td class="px-3 py-2">
                                 @if($row->documento)
                                     <div class="leading-tight">
                                         <div class="font-medium">{{ $row->documento->nombre }}</div>
                                         <div class="text-xs text-gray-500">{{ $row->documento->codigo }}</div>
+                                    </div>
+                                @elseif($row->tipo === 'creacion')
+                                    <div class="leading-tight">
+                                        <div class="font-medium">{{ $row->titulo_nuevo ?? 'Documento nuevo' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $row->codigo_nuevo ?? '—' }}</div>
                                     </div>
                                 @else
                                     <span class="text-gray-500">—</span>

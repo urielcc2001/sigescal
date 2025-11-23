@@ -134,7 +134,22 @@
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider">Título</th>
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider">Revisión</th>
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider">Fecha</th>
-                    <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider w-28">Acciones</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider w-28">
+                        <div class="flex items-center justify-between gap-2">
+                            <span>Acciones</span>
+
+                            @if($canCreate)
+                                <button type="button"
+                                        wire:click="openCreate"
+                                        class="inline-flex items-center justify-center rounded-md border border-emerald-500
+                                            px-2 py-1 text-[11px] font-semibold text-emerald-700
+                                            hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-900/40">
+                                    <span class="mr-1 text-sm">+</span>
+                                    <span>Agregar</span>
+                                </button>
+                            @endif
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -264,7 +279,6 @@
                 </div>
             </div>
 
-            {{-- Acciones (dentro del body, no en slot footer) --}}
             <div class="flex justify-end gap-2 pt-2">
                 <flux:button variant="ghost" @click="$wire.showEditModal=false">Cancelar</flux:button>
 
@@ -302,7 +316,7 @@
                 @endif
             </p>
 
-            {{-- Acciones (dentro del body) --}}
+            {{-- Acciones --}}
             <div class="flex justify-end gap-2">
                 <flux:button variant="ghost" @click="$wire.showDeleteModal=false">Cancelar</flux:button>
 
@@ -319,6 +333,81 @@
             </div>
         </div>
     </flux:modal>
+
+    @if($showCreateModal)
+        <flux:modal wire:model="showCreateModal" title="Agregar documento a la lista maestra">
+            <div class="space-y-4 text-sm">
+                {{-- Área --}}
+                <div>
+                    <label class="block text-sm font-medium">Área</label>
+                    <select
+                        class="mt-1 w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300
+                            focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400
+                            dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]"
+                        wire:model.live="area_id">
+                        <option value="">Selecciona un área</option>
+                        @foreach($areas as $area)
+                            <option value="{{ $area->id }}">{{ $area->nombre }}</option>
+                        @endforeach
+                    </select>
+                    @error('area_id') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Código --}}
+                <div>
+                    <label class="block text-sm font-medium">Código</label>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border px-3 py-2"
+                        placeholder="Ej. ITTUX-AC-PO-001"
+                        wire:model.defer="codigo">
+                    @error('codigo') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Título --}}
+                <div>
+                    <label class="block text-sm font-medium">Título</label>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border px-3 py-2"
+                        placeholder="Nombre del documento"
+                        wire:model.defer="nombre">
+                    @error('nombre') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Revisión + Fecha --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium">Revisión</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border px-3 py-2"
+                            placeholder="Ej. 00"
+                            wire:model.defer="revision">
+                        @error('revision') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Fecha de autorización</label>
+                        <input type="date"
+                            class="mt-1 w-full rounded-md border px-3 py-2"
+                            wire:model.defer="fecha_autorizacion">
+                        @error('fecha_autorizacion') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <flux:button variant="ghost" type="button"
+                                wire:click="$set('showCreateModal', false)">
+                        Cancelar
+                    </flux:button>
+
+                    <flux:button variant="primary" type="button"
+                                class="!bg-emerald-600 hover:!bg-emerald-700 !text-white"
+                                wire:click="saveCreate">
+                        Guardar
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    @endif
 
     {{-- Paginación --}}
     <div class="mt-4">

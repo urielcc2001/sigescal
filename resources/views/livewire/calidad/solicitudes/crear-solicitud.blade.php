@@ -44,65 +44,121 @@
     <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
         <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL DOCUMENTO</div>
 
-        {{-- Input por CÓDIGO con datalist: muestra "código — título" en la lista, pero al elegir queda solo el código --}}
-        <div class="grid md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium">Código del documento</label>
-
-                {{-- envoltura para posicionar el botón --}}
-                <div class="mt-1 relative">
-                    <input type="text"
-                        class="w-full rounded-md border p-2 pr-9"
-                        list="lista-codigos"
-                        placeholder="Escribe o selecciona..."
-                        wire:model.live="codigo"
-                        autocomplete="off">
-
-                    {{-- botón X para limpiar --}}
-                    <button type="button"
-                            wire:click="clearCodigo"
-                            class="absolute inset-y-0 right-2 my-auto text-zinc-400 hover:text-zinc-600"
-                            aria-label="Limpiar">✕</button>
+        @if($tipo === 'creacion')
+            {{-- MODO CREACIÓN: área + código editables --}}
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium">Área</label>
+                    <select
+                        class="mt-1 w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]"
+                        wire:model.live="area_id">
+                        <option value="">Selecciona un área</option>
+                        @foreach($areas as $area)
+                            <option value="{{ $area->id }}">
+                                {{ $area->codigo }} — {{ $area->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('area_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                 </div>
 
-                <datalist id="lista-codigos">
-                    @foreach($documentos as $doc)
-                        <option value="{{ $doc->codigo }}" label="{{ $doc->codigo }} — {{ \Illuminate\Support\Str::limit($doc->nombre, 80) }}"></option>
-                    @endforeach
-                </datalist>
-
-                @error('documento_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                <div>
+                    <label class="block text-sm font-medium">Código del documento (propuesto)</label>
+                    <div class="mt-1 relative">
+                        <input type="text"
+                            class="w-full rounded-md border p-2 pr-9"
+                            placeholder="Ej. ITTUX-CA-001"
+                            wire:model.live="codigo"
+                            autocomplete="off">
+                        <button type="button"
+                                wire:click="clearCodigo"
+                                class="absolute inset-y-0 right-2 my-auto text-zinc-400 hover:text-zinc-600"
+                                aria-label="Limpiar">✕</button>
+                    </div>
+                    @error('codigo') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium">Área</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2"
-                    value="{{ optional($areas->firstWhere('id', $area_id))->nombre }}" readonly>
-                @error('area_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+            <div class="grid md:grid-cols-3 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium">Revisión inicial</label>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2"
+                        wire:model.live="revision_actual"
+                        placeholder="Ej. 00">
+                    @error('revision_actual') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium">Título del nuevo documento</label>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2"
+                        wire:model.live="titulo"
+                        placeholder="Nombre del documento">
+                    @error('titulo') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
             </div>
-        </div>
+        @else
+            {{-- MODO MODIFICACIÓN / BAJA: comportamiento actual --}}
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium">Código del documento</label>
 
-        @php
-            $docSel = $documentos->firstWhere('id', (int) $documento_id);
-        @endphp
+                    <div class="mt-1 relative">
+                        <input type="text"
+                            class="w-full rounded-md border p-2 pr-9"
+                            list="lista-codigos"
+                            placeholder="Escribe o selecciona..."
+                            wire:model.live="codigo"
+                            autocomplete="off">
 
-        {{-- Ya NO repetimos el campo "Código". Solo mostramos info complementaria --}}
-        <div class="grid md:grid-cols-3 gap-4 mt-4">
-            <div>
-                <label class="block text-sm font-medium">Revisión actual</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2"
-                    value="{{ $docSel?->revision }}" readonly>
+                        <button type="button"
+                                wire:click="clearCodigo"
+                                class="absolute inset-y-0 right-2 my-auto text-zinc-400 hover:text-zinc-600"
+                                aria-label="Limpiar">✕</button>
+                    </div>
+
+                    <datalist id="lista-codigos">
+                        @foreach($documentos as $doc)
+                            <option value="{{ $doc->codigo }}" label="{{ $doc->codigo }} — {{ \Illuminate\Support\Str::limit($doc->nombre, 80) }}"></option>
+                        @endforeach
+                    </datalist>
+
+                    @error('documento_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Área</label>
+                    <input type="text" class="mt-1 w-full rounded-md border p-2"
+                        value="{{ optional($areas->firstWhere('id', $area_id))->nombre }}" readonly>
+                    @error('area_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
             </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium">Título</label>
-                <input type="text" class="mt-1 w-full rounded-md border p-2"
-                    value="{{ $docSel?->nombre }}" readonly>
+
+            @php
+                $docSel = $documentos->firstWhere('id', (int) $documento_id);
+            @endphp
+
+            <div class="grid md:grid-cols-3 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium">Revisión actual</label>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2"
+                        value="{{ $revision_actual }}"
+                        readonly>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium">Título</label>
+                    <input type="text"
+                        class="mt-1 w-full rounded-md border p-2"
+                        value="{{ $titulo }}"
+                        readonly>
+                </div>
             </div>
-        </div>
+        @endif
     </div>
 
     <div class="max-w-sm">
-        @if($documento_id)
+        @if($area_id && $responsable_slug)
         <div class="mt-4">
             <label class="block text-sm font-medium">Responsable del proceso</label>
             <select class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]" wire:model.live="responsable_slug">
@@ -121,7 +177,7 @@
 
         <div class="max-w-sm">
             <label class="block text-sm font-medium">Selecciona el tipo</label>
-            <select class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]" wire:model="tipo">
+            <select class="w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]" wire:model.live="tipo">
                 @foreach($tipos as $t)
                     <option value="{{ $t }}">{{ strtoupper($t) }}</option>
                 @endforeach
@@ -305,14 +361,14 @@
         </flux:button>
     </div>
 
-    {{-- Modal (patrón que ya te funciona) --}}
+    {{-- Modal --}}
     <flux:modal wire:model="showConfirm" title="Confirmar envío" icon="question-mark-circle" size="md">
         <div class="space-y-3">
             <p class="text-sm text-zinc-600 dark:text-zinc-300">
                 ¿Deseas enviar la solicitud ahora?
             </p>
 
-            {{-- (Opcional) resumen breve de lo que se enviará --}}
+            {{-- resumen breve de lo que se enviará --}}
             {{-- <div class="rounded-md border p-3 text-xs dark:border-zinc-700">
                 <div><span class="font-medium">Folio:</span> {{ $solicitud->folio }}</div>
                 <div><span class="font-medium">Documento:</span> {{ $docSel?->codigo }} — {{ $docSel?->nombre }}</div>

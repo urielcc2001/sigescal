@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-4xl space-y-6">
+<div class="space-y-6">
 
     {{-- Encabezado institucional --}}
     <div class="text-center space-y-1">
@@ -180,7 +180,7 @@
     </flux:modal>
 
     {{-- Nota --}}
-    <p class="text-xs text-zinc-600 dark:text-zinc-400">
-        Para validar su queja y/o sugerencia deberá proporcionar un dato de contacto. Esta información es de carácter confidencial.
+    <p class="text-xm text-zinc-600 dark:text-zinc-400">
+        Para validar su queja y/o sugerencia deberá verificar su dato de contacto. Esta información es de carácter confidencial y **su participación es anónima.**    
     </p>
 </div>

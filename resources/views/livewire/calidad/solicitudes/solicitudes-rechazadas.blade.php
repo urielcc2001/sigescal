@@ -52,44 +52,96 @@
         <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
             <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL DOCUMENTO</div>
 
-            <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium">Código del documento</label>
-                    <input type="text"
-                           class="mt-1 w-full rounded-md border p-2"
-                           list="lista-codigos"
-                           placeholder="Escribe o selecciona..."
-                           wire:model.live="codigo">
-                    <datalist id="lista-codigos">
-                        @foreach($documentos as $doc)
-                            <option value="{{ $doc->codigo }}" label="{{ $doc->codigo }} — {{ \Illuminate\Support\Str::limit($doc->nombre, 80) }}"></option>
-                        @endforeach
-                    </datalist>
-                    @error('documento_id') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+            @if($tipo === 'creacion')
+                {{-- MODO CREACIÓN: área + código editables --}}
+                <div class="grid md:grid-cols-2 gap-4" wire:key="rechazo-creacion">
+                    <div>
+                        <label class="block text-sm font-medium">Área</label>
+                        <select
+                            class="mt-1 w-full rounded-md border px-3 py-2 bg-zinc-50 text-zinc-900 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]"
+                            wire:model.live="area_id">
+                            <option value="">Selecciona un área</option>
+                            @foreach($areas as $area)
+                                <option value="{{ $area->id }}">
+                                    {{ $area->codigo }} — {{ $area->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('area_id') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Código del documento (propuesto)</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2"
+                            placeholder="Ej. ITTUX-AC-PO-001"
+                            wire:model.live="codigo">
+                        @error('codigo') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium">Área</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $docSel?->area?->nombre }}"
-                           readonly>
+                <div class="grid md:grid-cols-3 gap-4 mt-4" wire:key="rechazo-creacion-extra">
+                    <div>
+                        <label class="block text-sm font-medium">Revisión inicial</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2"
+                            wire:model.live="revision_actual"
+                            placeholder="Ej. 00">
+                        @error('revision_actual') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium">Título del nuevo documento</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2"
+                            wire:model.live="titulo"
+                            placeholder="Nombre del documento">
+                        @error('titulo') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
-            </div>
+            @else
+                {{-- MODO MODIFICACIÓN / BAJA: documento existente --}}
+                <div class="grid md:grid-cols-2 gap-4" wire:key="rechazo-modificacion">
+                    <div>
+                        <label class="block text-sm font-medium">Código del documento</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2"
+                            list="lista-codigos"
+                            placeholder="Escribe o selecciona..."
+                            wire:model.live="codigo">
+                        <datalist id="lista-codigos">
+                            @foreach($documentos as $doc)
+                                <option value="{{ $doc->codigo }}" label="{{ $doc->codigo }} — {{ \Illuminate\Support\Str::limit($doc->nombre, 80) }}"></option>
+                            @endforeach
+                        </datalist>
+                        @error('documento_id') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
 
-            <div class="grid md:grid-cols-3 gap-4 mt-4">
-                <div>
-                    <label class="block text-sm font-medium">Revisión actual</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $docSel?->revision }}"
-                           readonly>
+                    <div>
+                        <label class="block text-sm font-medium">Área</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                            value="{{ $docSel?->area?->nombre }}"
+                            readonly>
+                    </div>
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium">Título</label>
-                    <input type="text" class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
-                           value="{{ $docSel?->nombre }}"
-                           readonly>
+
+                <div class="grid md:grid-cols-3 gap-4 mt-4" wire:key="rechazo-modificacion-extra">
+                    <div>
+                        <label class="block text-sm font-medium">Revisión actual</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                            value="{{ $docSel?->revision }}"
+                            readonly>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium">Título</label>
+                        <input type="text"
+                            class="mt-1 w-full rounded-md border p-2 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+                            value="{{ $docSel?->nombre }}"
+                            readonly>
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
 
         {{-- Bloque: Tipo de trámite --}}

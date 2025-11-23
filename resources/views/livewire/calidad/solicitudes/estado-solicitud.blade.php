@@ -7,15 +7,15 @@
     <div class="mt-4 space-y-4">
         {{-- Filtros --}}
         <div class="flex flex-row items-end gap-3 flex-nowrap">
-            {{-- Buscar (ocupa la mayoría) --}}
+            {{-- Buscar --}}
             <div class="flex-1 min-w-0">
                 <label class="block text-sm font-medium">Buscar</label>
                 <input
                     type="text"
                     wire:model.live.debounce.400ms="search"
-                    class="w-full rounded-md border px-3 py-2"
-                    placeholder="Codigo, documento, descripción..."
-                />
+                    class="w-full rounded-md border border-zinc-300 bg-white p-2 pr-9 text-sm
+                        dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        placeholder="Codigo, documento, descripción..."/>
             </div>
 
             {{-- Estatus (ancho fijo) --}}
@@ -41,7 +41,7 @@
         </div>
 
         {{-- Tabla --}}
-        <div class="overflow-x-auto rounded-lg border">
+        <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-zinc-900/40">
                     <tr>
@@ -52,18 +52,41 @@
                         <th class="px-3 py-2">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
+                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse ($rows as $row)
-                        <tr class="align-top">
-                            {{-- Código (documento_codigo) --}}
-                            <td class="px-3 py-2 font-medium">{{ $row->documento?->codigo ?? '—' }}</td>
+                        @php
+                            $isCreacion = $row->tipo === 'creacion';
 
-                            {{-- Título = nombre del documento --}}
+                            // Código a mostrar
+                            $codigo = $row->documento?->codigo
+                                ?? ($isCreacion ? $row->codigo_nuevo : null);
+
+                            // Título a mostrar
+                            $titulo = $row->documento?->nombre
+                                ?? ($isCreacion ? $row->titulo_nuevo : null);
+                        @endphp
+
+                        <tr class="align-top">
+                            {{-- Código --}}
+                            <td class="px-3 py-2 font-medium">
+                                {{ $codigo ?? '—' }}
+                            </td>
+
+                            {{-- Título --}}
                             <td class="px-3 py-2">
-                                @if($row->documento)
+                                @if($titulo)
                                     <div class="leading-tight">
-                                        <div class="font-medium">{{ $row->documento->nombre }}</div>
-                                        <div class="text-xs text-gray-500">{{ $row->documento->codigo }}</div>
+                                        <div class="font-medium">{{ $titulo }}</div>
+
+                                        @if($codigo)
+                                            <div class="text-xs text-gray-500">{{ $codigo }}</div>
+                                        @endif
+
+                                        @if($row->tipo === 'creacion')
+                                            <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold">
+                                                CREACIÓN
+                                            </span>
+                                        @endif
                                     </div>
                                 @else
                                     <span class="text-gray-500">—</span>
@@ -80,23 +103,22 @@
                                 <span @class([
                                     'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
                                     'bg-yellow-100 text-yellow-800' => $row->estado === 'en_revision',
-                                    'bg-green-100 text-green-800' => $row->estado === 'aprobada',
-                                    'bg-red-100 text-red-800' => $row->estado === 'rechazada',
-                                ])>{{ str_replace('_',' ', $row->estado) }}</span>
+                                    'bg-green-100 text-green-800'   => $row->estado === 'aprobada',
+                                    'bg-red-100 text-red-800'       => $row->estado === 'rechazada',
+                                ])>
+                                    {{ str_replace('_',' ', $row->estado) }}
+                                </span>
                             </td>
 
                             {{-- Acciones --}}
-                           
                             <td class="px-3 py-2">
                                 <div class="flex flex-wrap gap-2">
-                                    {{-- Ver (ajusta la ruta si usas otra) --}}
                                     <a href="{{ route('calidad.solicitudes.estado.show', $row->id) }}"
                                     wire:navigate
                                     class="inline-flex items-center rounded-md px-2.5 py-1.5 text-xs font-semibold !text-white !bg-blue-600 hover:!bg-blue-700">
-                                    Ver
+                                        Ver
                                     </a>
 
-                                    {{-- Editar: solo si fue rechazada (ajusta la ruta si la tienes) --}}
                                     @if ($row->estado === 'rechazada')
                                         <a href="{{ route('calidad.solicitudes.estado.edit', $row->id) }}"
                                         wire:navigate
