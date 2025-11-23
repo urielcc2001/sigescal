@@ -191,7 +191,7 @@
                         </h3>
                     </div>
                     <span class="text-sm text-neutral-500 dark:text-neutral-400">
-                        Distribución por estado (barras proporcionales)
+                        Distribución por estado
                     </span>
                 </div>
 
@@ -303,7 +303,7 @@
                     {{-- ZIP general de documentos --}}
                     <a href="{{ route('lista-maestra.zip-all') }}"
                        class="group rounded-lg border border-neutral-200 bg-white/70 p-4 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60 dark:hover:bg-neutral-800">
-                        <p class="font-medium text-neutral-800 dark:text-neutral-100">Descarga masiva</p>
+                        <p class="font-medium text-neutral-800 dark:text-neutral-100">Descarga ZIP</p>
                         <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">ZIP con los documentos vigentes.</p>
                     </a>
 
@@ -314,11 +314,11 @@
                         <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Responsables del SGC por puesto.</p>
                     </a>
 
-                    {{-- Quejas y sugerencias --}}
-                    <a href="{{ route('admin.quejas.index') }}"
+                    {{-- Ver modulo lista maestra --}}
+                    <a href="{{ route('calidad.lista-maestra.index') }}"
                        class="group rounded-lg border border-neutral-200 bg-white/70 p-4 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60 dark:hover:bg-neutral-800">
-                        <p class="font-medium text-neutral-800 dark:text-neutral-100">Quejas y sugerencias</p>
-                        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Revisión de buzón de alumnos.</p>
+                        <p class="font-medium text-neutral-800 dark:text-neutral-100">Lista maestra</p>
+                        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Revisión de lista maestra.</p>
                     </a>
 
                     {{-- Crear solicitud --}}

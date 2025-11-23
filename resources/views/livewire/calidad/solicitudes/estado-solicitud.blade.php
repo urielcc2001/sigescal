@@ -7,15 +7,15 @@
     <div class="mt-4 space-y-4">
         {{-- Filtros --}}
         <div class="flex flex-row items-end gap-3 flex-nowrap">
-            {{-- Buscar (ocupa la mayoría) --}}
+            {{-- Buscar --}}
             <div class="flex-1 min-w-0">
                 <label class="block text-sm font-medium">Buscar</label>
                 <input
                     type="text"
                     wire:model.live.debounce.400ms="search"
-                    class="w-full rounded-md border px-3 py-2"
-                    placeholder="Codigo, documento, descripción..."
-                />
+                    class="w-full rounded-md border border-zinc-300 bg-white p-2 pr-9 text-sm
+                        dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        placeholder="Codigo, documento, descripción..."/>
             </div>
 
             {{-- Estatus (ancho fijo) --}}
@@ -41,7 +41,7 @@
         </div>
 
         {{-- Tabla --}}
-        <div class="overflow-x-auto rounded-lg border">
+        <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-zinc-900/40">
                     <tr>
@@ -52,7 +52,7 @@
                         <th class="px-3 py-2">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
+                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse ($rows as $row)
                         @php
                             $isCreacion = $row->tipo === 'creacion';

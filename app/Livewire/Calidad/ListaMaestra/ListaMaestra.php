@@ -24,9 +24,13 @@ class ListaMaestra extends PageWithDashboard
     /** Filtros */
     public ?int $areaId = null;
     public string $search = '';
+    // Para crear
+    public ?int $area_id = null;
 
     public bool $showEditModal = false;
     public bool $showDeleteModal = false;
+    public bool $showCreateModal = false;
+    public bool $canCreate = false;
 
     /** Registro en edición/eliminación */
     public ?int $editingId = null;
@@ -74,8 +78,30 @@ class ListaMaestra extends PageWithDashboard
 
     public function mount(): void
     {
-        $this->canManageDownloads = auth()->user()?->can('lista-maestra.download.manage') ?? false;
+        $user = auth()->user();
+
+        $this->canManageDownloads = $user?->can('lista-maestra.download.manage') ?? false;
         $this->downloadsAllowed = $this->readCombinedDownloadState();
+
+        // Solo Super Admin puede crear registros manuales
+        $this->canCreate = $user?->hasRole('Super Admin') ?? false;
+    }
+
+    public function openCreate(): void
+    {
+        abort_unless($this->canCreate, 403);
+
+        $this->resetValidation();
+
+        // Limpiar formulario
+        $this->editingId          = null;
+        $this->area_id            = $this->areaId; // si tienes un área filtrada, la sugerimos
+        $this->codigo             = '';
+        $this->nombre             = '';
+        $this->revision           = '';
+        $this->fecha_autorizacion = now()->toDateString();
+
+        $this->showCreateModal = true;
     }
 
     // ===== Helper: roles objetivo (todos menos Super Admin) =====
@@ -196,6 +222,17 @@ class ListaMaestra extends PageWithDashboard
         ];
     }
 
+    protected function rulesCreate(): array
+    {
+        return [
+            'area_id'            => 'required|exists:areas,id',
+            'codigo'             => 'required|string|max:50',
+            'nombre'             => 'required|string|max:255',
+            'revision'           => 'required|string|max:50',
+            'fecha_autorizacion' => 'nullable|date|after_or_equal:1900-01-01',
+        ];
+    }
+
     // ======== Edición ========
     public function openEdit(int $id): void
     {
@@ -237,6 +274,30 @@ class ListaMaestra extends PageWithDashboard
 
         // Opcional: limpiar estado de edición
         $this->reset(['editingId', 'codigo', 'nombre', 'revision', 'fecha_autorizacion']);
+    }
+
+    public function saveCreate(): void
+    {
+        abort_unless($this->canCreate, 403);
+
+        $this->validate($this->rulesCreate());
+
+        ListaMaestraModel::create([
+            'codigo'             => $this->codigo,
+            'nombre'             => $this->nombre,
+            'revision'           => $this->revision,
+            'fecha_autorizacion' => $this->fecha_autorizacion ?: null,
+            'area_id'            => $this->area_id,
+        ]);
+
+        $this->showCreateModal = false;
+
+        $this->dispatch('toastifyAlert', [
+            'message' => 'Documento agregado a la lista maestra.',
+            'type'    => 'success',
+        ]);
+
+        $this->reset(['area_id', 'codigo', 'nombre', 'revision', 'fecha_autorizacion']);
     }
 
     // ======== Eliminación ========

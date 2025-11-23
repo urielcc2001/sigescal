@@ -66,7 +66,10 @@
                             href="{{ route('calidad.solicitudes.revisar') }}"
                             :current="request()->routeIs('calidad.solicitudes.revisar')"
                             wire:navigate>
-                            Revisar solicitudes
+                            <div class="flex items-center justify-between w-full">
+                                <span>Revisar solicitudes</span>
+                                <livewire:calidad.solicitudes.solicitudes-badge :key="'revisar-solicitudes'" />
+                            </div>
                         </flux:navlist.item>
                     @endcan
 
@@ -128,13 +131,21 @@
                 @unless (auth('students')->check())
                     @can('quejas.review')
                         <flux:navlist.group heading="Quejas y sugerencias (admin)" class="grid">
+
                             <flux:navlist.item
                                 icon="inbox"
                                 href="{{ route('admin.quejas.index') }}"
                                 :current="request()->routeIs('admin.quejas.index')"
-                                wire:navigate>
-                                Revisar / responder
+                                wire:navigate
+                            >
+                                <div class="flex justify-between items-center w-full">
+                                    <span>Revisar / responder</span>
+
+                                    {{-- Badge Livewire --}}
+                                    @livewire('calidad.solicitudes.solicitudes-badge', ['scope' => 'complaints'], key('badge-complaints'))
+                                </div>
                             </flux:navlist.item>
+
                         </flux:navlist.group>
                     @endcan
                 @endunless
