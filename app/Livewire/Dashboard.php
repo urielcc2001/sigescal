@@ -11,6 +11,7 @@ use App\Models\LmFolder;
 use App\Models\Complaint;
 use Illuminate\Contracts\View\View;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class Dashboard extends PageWithDashboard
 {
@@ -150,10 +151,32 @@ class Dashboard extends PageWithDashboard
      */
     protected function loadListaMaestraStats(): void
     {
+        // Total de documentos en lista_maestra
+        $totalDocumentos = ListaMaestra::count();
+
+        // Documentos agrupados por área
+        $porArea = ListaMaestra::query()
+            ->join('areas', 'lista_maestra.area_id', '=', 'areas.id')
+            ->select(
+                'areas.id',
+                'areas.nombre',
+                'areas.codigo',
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('areas.id', 'areas.nombre', 'areas.codigo')
+            ->orderBy('areas.nombre')
+            ->get();
+
         $this->listaMaestraStats = [
-            'total_documentos' => ListaMaestra::count(), // registros de lista_maestra
-            'total_archivos'   => LmFile::count(),       // archivos físicos en carpetas
-            'total_carpetas'   => LmFolder::count(),     // carpetas virtuales
+            'total_documentos' => $totalDocumentos,
+            // array de: ['nombre' => ..., 'codigo' => ..., 'total' => ...]
+            'por_area' => $porArea->map(function ($row) {
+                return [
+                    'nombre' => $row->nombre,
+                    'codigo' => $row->codigo,
+                    'total'  => $row->total,
+                ];
+            })->toArray(),
         ];
     }
 

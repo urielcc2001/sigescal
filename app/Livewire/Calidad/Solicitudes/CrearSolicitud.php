@@ -12,10 +12,12 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithFileUploads;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class CrearSolicitud extends PageWithDashboard
 {
     use WithFileUploads;
+    use LivewireAlert;
 
     public string $codigo = '';
 
@@ -354,7 +356,7 @@ class CrearSolicitud extends PageWithDashboard
         $this->folio = $this->generarFolio();
         $this->requiere_difusion = true;
 
-        session()->flash('success', 'Solicitud enviada correctamente.');
+        $this->flash('success', 'Solicitud enviada correctamente.');
         return redirect()->route('calidad.solicitudes.estado');
     }
 

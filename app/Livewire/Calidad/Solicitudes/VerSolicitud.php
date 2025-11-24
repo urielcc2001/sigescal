@@ -8,9 +8,11 @@ use App\Models\Historial;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class VerSolicitud extends PageWithDashboard
 {
+    use LivewireAlert;
     public ?Solicitud $solicitud = null;
 
     // Modales
@@ -97,7 +99,7 @@ class VerSolicitud extends PageWithDashboard
         $this->solicitud->refresh();
 
         $this->showApproveModal = false;
-        session()->flash('success', 'Solicitud aprobada.');
+        $this->flash('success', 'Solicitud aprobada.');
         return redirect()->route('calidad.solicitudes.revisar');
     }
 
@@ -123,7 +125,7 @@ class VerSolicitud extends PageWithDashboard
         });
 
         $this->showRejectModal = false;
-        session()->flash('success', 'Solicitud rechazada.');
+        $this->flash('success', 'Solicitud rechazada.');
         return redirect()->route('calidad.solicitudes.revisar');
     }
 

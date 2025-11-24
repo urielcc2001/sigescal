@@ -55,6 +55,21 @@ class MasterZipController extends Controller
         ]);
     }
 
+    public function downloadUploadedZip()
+    {
+        // Ruta fija donde guardamos el ZIP subido por el usuario
+        $path = 'sgc/master/zips/lista-maestra.zip';
+
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404, 'No se encontró ningún ZIP subido.');
+        }
+
+        return Storage::disk('local')->download($path, 'ListaMaestra_Subida.zip', [
+            'Content-Type' => 'application/zip',
+        ]);
+    }
+
+
     private function addFolderToZip(ZipStream $zip, LmFolder $folder, string $prefix): void
     {
         $pathPrefix = $prefix === '' ? $folder->name : $prefix.'/'.$folder->name;

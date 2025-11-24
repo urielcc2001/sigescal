@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class ListaMaestra extends PageWithDashboard
 {
     use WithPagination;
+    use LivewireAlert;
 
     protected $paginationTheme = 'tailwind';
     public bool $showExportModal = false;
@@ -168,12 +170,17 @@ class ListaMaestra extends PageWithDashboard
 
         $this->downloadsAllowed = $new;
 
-        $this->dispatch('toastifyAlert', [
-            'type' => $new ? 'success' : 'warning',
-            'message' => $new
+        $this->alert(
+            $new ? 'success' : 'warning',
+            $new
                 ? 'Descargas (PDF y ZIP) habilitadas para usuarios.'
                 : 'Descargas (PDF y ZIP) deshabilitadas para usuarios.',
-        ]);
+            [
+                'position' => 'top-end',
+                'timer' => 3500,
+                'toast' => true,
+            ]
+        );
     }
 
     private function computeDefaultExportDate(): string
@@ -267,13 +274,16 @@ class ListaMaestra extends PageWithDashboard
         ]);
 
         $this->showEditModal = false;
-        $this->dispatch('toastifyAlert', [
-            'message' => 'Documento actualizado correctamente.',
-            'type'    => 'success',
-        ]);
 
-        // Opcional: limpiar estado de edición
-        $this->reset(['editingId', 'codigo', 'nombre', 'revision', 'fecha_autorizacion']);
+        $this->alert(
+            'success',
+            'Documento actualizado correctamente.',
+            [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]
+        );
     }
 
     public function saveCreate(): void
@@ -292,10 +302,15 @@ class ListaMaestra extends PageWithDashboard
 
         $this->showCreateModal = false;
 
-        $this->dispatch('toastifyAlert', [
-            'message' => 'Documento agregado a la lista maestra.',
-            'type'    => 'success',
-        ]);
+        $this->alert(
+            'success',
+            'Documento agregado a la lista maestra.',
+            [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]
+        );
 
         $this->reset(['area_id', 'codigo', 'nombre', 'revision', 'fecha_autorizacion']);
     }
@@ -311,27 +326,43 @@ class ListaMaestra extends PageWithDashboard
 
     public function delete(): void
     {
-        if (!$this->deletingId) return;
+        if (!$this->deletingId) {
+            return;
+        }
 
         $doc = ListaMaestraModel::findOrFail($this->deletingId);
 
         try {
             $doc->delete();
-            $this->dispatch('toastifyAlert', [
-                'message' => 'Documento eliminado.',
-                'type'    => 'success',
-            ]);
+
+            $this->alert(
+                'success',
+                'Documento eliminado.',
+                [
+                    'position' => 'top-end',
+                    'timer' => 3000,
+                    'toast' => true,
+                ]
+            );
+
         } catch (\Throwable $e) {
-            // Por si hay FK con solicitudes, etc.
-            $this->dispatch('toastifyAlert', [
-                'message' => 'No se pudo eliminar: el documento está en uso.',
-                'type'    => 'error',
-            ]);
+
+            report($e);
+
+            $this->alert(
+                'error',
+                'No se pudo eliminar: el documento está en uso.',
+                [
+                    'position' => 'top-end',
+                    'timer' => 4000,
+                    'toast' => true,
+                ]
+            );
         }
 
         $this->showDeleteModal = false;
         $this->reset(['deletingId']);
-        // Mantiene página/filters; Livewire refresca la tabla automáticamente
+        // Livewire refresca la tabla automáticamente
     }
 
     public function render(): View
