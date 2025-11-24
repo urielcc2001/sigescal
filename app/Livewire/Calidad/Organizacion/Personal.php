@@ -9,10 +9,12 @@ use App\Models\OrgPosition;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Carbon;
 use Livewire\WithPagination;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class Personal extends PageWithDashboard
 {
     use WithPagination, AuthorizesRequests;
+    use LivewireAlert;
 
     // Filtros / UI
     public string $search = '';
@@ -187,10 +189,15 @@ class Personal extends PageWithDashboard
 
         $this->showAssignModal = false;
 
-        $this->dispatch('toastifyAlert', [
-            'type' => 'success',
-            'message' => 'Cambios guardados correctamente.',
-        ]);
+        $this->alert(
+            'success',
+            'Cambios guardados correctamente.',
+            [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]
+        );
     }
 
 

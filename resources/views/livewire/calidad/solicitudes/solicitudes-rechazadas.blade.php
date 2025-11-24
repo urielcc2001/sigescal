@@ -375,16 +375,17 @@
         </div>
 
         {{-- Enviar nuevamente (abre modal) --}}
-        <div class="pt-4 flex items-center gap-3">
+        <div class="pt-4 flex flex-col items-center gap-3">
             <flux:button type="button"
-                         wire:click="abrirConfirmarReenviar"
-                         variant="primary"
-                         class="!bg-blue-600 hover:!bg-blue-700 !text-white">
+                        wire:click="abrirConfirmarReenviar"
+                        variant="primary"
+                        class="!bg-blue-600 hover:!bg-blue-700 !text-white">
                 Enviar nuevamente
             </flux:button>
+
             <span class="text-sm text-gray-600 dark:text-gray-400"
-                  wire:loading.delay
-                  wire:target="reenviar">Enviando…</span>
+                wire:loading.delay
+                wire:target="reenviar">Enviando…</span>
         </div>
 
         {{-- Modal de confirmación --}}

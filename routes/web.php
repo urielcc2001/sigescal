@@ -121,6 +121,10 @@ Route::middleware(['auth'])->group(function (): void {
         ->middleware('can:lista-maestra.view')
         ->name('calidad.lista-maestra.index');
 
+    Route::get('calidad/lista-maestra/zip-uploaded', [MasterZipController::class, 'downloadUploadedZip'])
+    ->name('lista-maestra.zip-uploaded')
+    ->middleware('can:lista-maestra.files.download');
+
     // ==== Organización / Personal ====
     Route::get('calidad/organizacion/personal', \App\Livewire\Calidad\Organizacion\Personal::class)
         ->middleware('can:org.personal.view')

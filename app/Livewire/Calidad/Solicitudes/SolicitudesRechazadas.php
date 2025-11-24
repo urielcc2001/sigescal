@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use App\Models\Area;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class SolicitudesRechazadas extends PageWithDashboard
 {
     use WithFileUploads;
+    use LivewireAlert;
 
     public Solicitud $solicitud;
 
@@ -260,9 +262,9 @@ class SolicitudesRechazadas extends PageWithDashboard
             $this->imagenesDice = [];
             $this->imagenesDebeDecir = [];
 
-            $this->cerrarConfirmarReenviar();
-            session()->flash('success', 'Solicitud reenviada para revisión.');
+            $this->flash('success', 'Solicitud reenviada para revisión.');
             return redirect()->route('calidad.solicitudes.estado');
+
 
         } catch (\Throwable $e) {
             report($e);

@@ -89,19 +89,26 @@
                         </span>
                     </div>
 
-                    <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-neutral-600 dark:text-neutral-400">
-                        <div>
-                            <div class="font-semibold">Archivos</div>
-                            <div class="text-base text-neutral-900 dark:text-neutral-100">
-                                {{ $this->listaMaestraStats['total_archivos'] ?? 0 }}
+                    <div class="mt-3 max-h-36 overflow-y-auto pr-2
+                                grid grid-cols-2 gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+
+                        @foreach($this->listaMaestraStats['por_area'] ?? [] as $area)
+                            <div>
+                                <div class="font-semibold">
+                                    {{ $area['nombre'] }}
+                                </div>
+                                <div class="text-base text-neutral-900 dark:text-neutral-100">
+                                    {{ $area['total'] }}
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <div class="font-semibold">Carpetas</div>
-                            <div class="text-base text-neutral-900 dark:text-neutral-100">
-                                {{ $this->listaMaestraStats['total_carpetas'] ?? 0 }}
+                        @endforeach
+
+                        @if(empty($this->listaMaestraStats['por_area']))
+                            <div class="col-span-2 text-sm text-neutral-500">
+                                Sin documentos registrados en Lista Maestra.
                             </div>
-                        </div>
+                        @endif
+
                     </div>
 
                     <div class="mt-3 flex items-center justify-between text-sm">
@@ -300,11 +307,22 @@
                         <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Versión rápida para consulta.</p>
                     </a>
 
+                    @php
+                        $zipUploadedPath = 'sgc/master/zips/lista-maestra.zip';
+                        $hasUploadedZip = \Illuminate\Support\Facades\Storage::disk('local')->exists($zipUploadedPath);
+
+                        $downloadRoute = $hasUploadedZip
+                            ? route('lista-maestra.zip-uploaded')   // ZIP subido manualmente
+                            : route('lista-maestra.zip-all');       // ZIP generado desde BD
+                    @endphp
+
                     {{-- ZIP general de documentos --}}
-                    <a href="{{ route('lista-maestra.zip-all') }}"
-                       class="group rounded-lg border border-neutral-200 bg-white/70 p-4 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60 dark:hover:bg-neutral-800">
+                    <a href="{{ $downloadRoute }}"
+                    class="group rounded-lg border border-neutral-200 bg-white/70 p-4 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60 dark:hover:bg-neutral-800">
                         <p class="font-medium text-neutral-800 dark:text-neutral-100">Descarga ZIP</p>
-                        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">ZIP con los documentos vigentes.</p>
+                        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                            ZIP con los documentos vigentes.
+                        </p>
                     </a>
 
                     {{-- Organización / personal --}}

@@ -17,13 +17,25 @@
             @endcan
 
             @can('lista-maestra.files.download')
+                @php
+                    $zipUploadedPath = 'sgc/master/zips/lista-maestra.zip';
+                    $hasUploadedZip = Storage::disk('local')->exists($zipUploadedPath);
+
+                    $downloadRoute = $hasUploadedZip
+                        ? route('lista-maestra.zip-uploaded')
+                        : route('lista-maestra.zip-all');
+                @endphp
+
+            @can('lista-maestra.files.download')
                 <flux:button
                     icon="archive-box-arrow-down"
                     as="a"
-                    href="{{ route('lista-maestra.zip-all') }}"
+                    href="{{ $downloadRoute }}"
                     variant="outline">
                     Descargar todo (ZIP)
                 </flux:button>
+            @endcan
+
             @endcan
         </div>
     @endif
@@ -80,6 +92,45 @@
                 </div>
             </div>
 
+            {{-- OPCIÓN 2: Subir un solo ZIP --}}
+            <div class="border rounded-lg p-4 space-y-3">
+                <div class="text-sm font-medium text-neutral-800 dark:text-neutral-100">
+                    O subir un archivo ZIP con todos los documentos
+                </div>
+
+                <input
+                    type="file"
+                    wire:model="zipFile"
+                    accept=".zip"
+                    class="w-full rounded-md border px-3 py-2
+                           bg-white text-zinc-900 border-zinc-300
+                           dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
+                >
+
+                @error('zipFile')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
+
+                @if ($zipFile)
+                    <p class="text-xs text-neutral-500">
+                        ZIP seleccionado:
+                        <strong>{{ $zipFile->getClientOriginalName() }}</strong>
+                    </p>
+                @endif
+
+                <div class="flex justify-end">
+                    <flux:button
+                        variant="outline"
+                        icon="archive-box-arrow-down"
+                        wire:click="uploadZip"
+                        wire:loading.attr="disabled"
+                    >
+                        <span wire:loading.remove>Subir ZIP</span>
+                        <span wire:loading>Subiendo…</span>
+                    </flux:button>
+                </div>
+            </div>
+
             @error('files') <div class="text-red-600 text-sm">{{ $message }}</div> @enderror
         </div>
     </flux:modal>
@@ -87,6 +138,61 @@
     {{-- MODAL: VER / GESTIONAR ARCHIVOS       --}}
     <flux:modal wire:model="showList" title="Lista Maestra — Archivos y Carpetas" icon="folder" size="5xl">
         <div class="space-y-6">
+            {{-- Información del ZIP de Lista Maestra --}}
+            @php
+                $zipUploadedPath = 'sgc/master/zips/lista-maestra.zip';
+                $hasUploadedZip = \Illuminate\Support\Facades\Storage::disk('local')->exists($zipUploadedPath);
+                $zipSize = $hasUploadedZip
+                    ? \Illuminate\Support\Facades\Storage::disk('local')->size($zipUploadedPath)
+                    : null;
+            @endphp
+
+            <div class="space-y-2">
+                <div class="text-xs font-semibold uppercase text-neutral-500">
+                    ZIP de Lista Maestra
+                </div>
+
+                @if ($hasUploadedZip)
+                    <div class="flex items-center justify-between rounded-lg border px-3 py-2">
+                        <div class="min-w-0">
+                            <div class="font-medium truncate">
+                                lista-maestra.zip
+                            </div>
+                            <div class="text-xs text-neutral-600">
+                                Tamaño:
+                                <strong>{{ number_format($zipSize / 1024 / 1024, 2) }} MB</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            {{-- Descargar ZIP subido --}}
+                            <flux:button
+                                icon="archive-box-arrow-down"
+                                as="a"
+                                href="{{ route('lista-maestra.zip-uploaded') }}"
+                                size="xs"
+                                variant="outline">
+                                Descargar ZIP
+                            </flux:button>
+
+                            {{-- Eliminar ZIP subido --}}
+                            <flux:button
+                                icon="trash"
+                                size="xs"
+                                variant="outline"
+                                class="!border-red-500 !text-red-600 hover:!bg-red-50"
+                                x-on:click.prevent="if(confirm('¿Eliminar el ZIP actual para subir uno nuevo?')) { $wire.deleteZip() }">
+                                Eliminar ZIP
+                            </flux:button>
+                        </div>
+                    </div>
+                @else
+                    <div class="rounded-lg border px-3 py-2 text-sm text-neutral-500">
+                        No hay ningún ZIP de Lista Maestra subido actualmente.
+                    </div>
+                @endif
+            </div>
+
 
             {{-- Carpetas raíz (nota: files_count solo cuenta archivos directos, no descendientes) --}}
             <div class="space-y-2">

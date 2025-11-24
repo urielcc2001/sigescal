@@ -3,6 +3,7 @@
 namespace App\Livewire\Calidad\ListaMaestra;
 
 use Livewire\Component;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LmFolder;
@@ -10,7 +11,7 @@ use App\Models\LmFile;
 
 class UploadFolder extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, LivewireAlert;
 
     /** Modales */
     public bool $open = false;     // Modal: subir carpeta
@@ -22,6 +23,10 @@ class UploadFolder extends Component
     public array $relativePaths = []; // rutas relativas alineadas con $files
     public int $totalBytes = 0;
 
+    /** Subida alternativa: un solo ZIP */
+    public $zipFile; //
+    protected string $zipPath = 'sgc/master/zips/lista-maestra.zip';
+
     /** Límites Laravel/Livewire (ajústalos a tu gusto) */
     protected int $maxTotalBytes = 30 * 1024 * 1024; // 30 MB total
 
@@ -29,13 +34,24 @@ class UploadFolder extends Component
         // 10 MB por archivo y solo PDF
         'files.*'       => 'file|mimes:pdf|max:10240', // 10,240 KB = 10 MB
         'relativePaths' => 'array',
+        'zipFile' => 'nullable|file|mimes:zip|max:30720', // 30 MB (en Kilobytes)
     ];
 
     /** Computed: ¿ya hay datos cargados? (para cambiar Subir -> Ver/Descargar) */
     public function getHasDataProperty(): bool
     {
-        return LmFile::query()->exists();
+        $hasFiles = LmFile::query()->exists();
+
+        $hasZip = Storage::disk('local')->exists('sgc/master/zips/lista-maestra.zip');
+
+        return $hasFiles || $hasZip;
     }
+
+    public function getHasUploadedZipProperty(): bool
+    {
+        return Storage::disk('local')->exists($this->zipPath);
+    }
+
 
     /** Computed: carpetas raíz con conteo de archivos directos */
     public function getRootFoldersProperty()
@@ -70,6 +86,38 @@ class UploadFolder extends Component
             );
         }
     }
+
+    /** Subir un ZIP completo y guardarlo tal cual para descarga */
+    public function uploadZip(): void
+    {
+        // Validamos solo el campo zipFile
+        $this->validateOnly('zipFile');
+
+        if (! $this->zipFile) {
+            $this->addError('zipFile', 'Selecciona un archivo ZIP.');
+            return;
+        }
+
+        // Carpeta donde se almacenarán los ZIP de lista maestra
+        $dir = 'sgc/master/zips';
+
+        Storage::disk('local')->makeDirectory($dir);
+
+        // Puedes usar un nombre fijo (para sobreescribir siempre el último)
+        $filename = 'lista-maestra.zip';
+
+        $path = $this->zipFile->storeAs($dir, $filename, 'local');
+
+        // Limpiar input
+        $this->reset('zipFile');
+
+        // Forzar refresco de la propiedad hasData
+        $this->dispatch('$refresh');
+
+        $this->flash('success', 'ZIP de Lista Maestra subido correctamente.');
+        $this->redirect(route('calidad.lista-maestra.index'), true);
+    }
+
 
     /** Guarda todos los archivos respetando la estructura de carpetas */
     public function save(): void
@@ -153,6 +201,17 @@ class UploadFolder extends Component
         }
 
         $folder->delete();
+    }
+
+    /** Elimina el ZIP subido manualmente */
+    public function deleteZip(): void
+    {
+        if (Storage::disk('local')->exists($this->zipPath)) {
+            Storage::disk('local')->delete($this->zipPath);
+        }
+
+        $this->dispatch('$refresh');
+        session()->flash('ok', 'ZIP de Lista Maestra eliminado.');
     }
 
     public function render()
