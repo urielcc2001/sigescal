@@ -14,6 +14,8 @@ class VerSolicitud extends PageWithDashboard
 {
     use LivewireAlert;
     public ?Solicitud $solicitud = null;
+    public bool $showFechasFirmasModal = false;
+    public array $fechasFirmas = [];
 
     // Modales
     public bool $showApproveModal = false;
@@ -34,6 +36,45 @@ class VerSolicitud extends PageWithDashboard
             'imagenesDice',
             'imagenesDebeDecir',
         ]);
+        $this->syncFechasFirmas();
+    }
+
+    public function syncFechasFirmas(): void
+    {
+        $this->fechasFirmas = [
+            'solicitante' => optional($this->solicitud->fecha)?->format('Y-m-d'),
+            'responsable' => optional($this->solicitud->fecha_firma_responsable)?->format('Y-m-d'),
+            'controlador' => optional($this->solicitud->fecha_firma_controlador)?->format('Y-m-d'),
+            'coordinacion'=> optional($this->solicitud->fecha_firma_coord_calidad)?->format('Y-m-d'),
+        ];
+    }
+
+    public function openFechasFirmasModal(): void
+    {
+        $this->syncFechasFirmas();
+        $this->showFechasFirmasModal = true;
+    }
+
+    public function saveFechasFirmas(): void
+    {
+        $this->validate([
+            'fechasFirmas.solicitante'  => ['nullable', 'date'],
+            'fechasFirmas.responsable'  => ['nullable', 'date'],
+            'fechasFirmas.controlador'  => ['nullable', 'date'],
+            'fechasFirmas.coordinacion' => ['nullable', 'date'],
+        ]);
+
+        $this->solicitud->fecha                      = $this->fechasFirmas['solicitante'] ?: null;
+        $this->solicitud->fecha_firma_responsable    = $this->fechasFirmas['responsable'] ?: null;
+        $this->solicitud->fecha_firma_controlador    = $this->fechasFirmas['controlador'] ?: null;
+        $this->solicitud->fecha_firma_coord_calidad  = $this->fechasFirmas['coordinacion'] ?: null;
+
+        $this->solicitud->save();
+
+        $this->showFechasFirmasModal = false;
+
+        $this->alert('success', 'Fechas de firmas actualizadas.');
+
     }
 
     public function abrirAprobar()

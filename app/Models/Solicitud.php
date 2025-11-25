@@ -32,6 +32,9 @@ class Solicitud extends Model
 
     protected $casts = [
         'fecha' => 'date',
+        'fecha_firma_responsable'    => 'date',
+        'fecha_firma_controlador'    => 'date',
+        'fecha_firma_coord_calidad'  => 'date',
         'requiere_capacitacion' => 'bool',
         'requiere_difusion'     => 'bool',
     ];

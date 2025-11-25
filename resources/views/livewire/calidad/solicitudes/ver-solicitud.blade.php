@@ -1,3 +1,4 @@
+<div>
 <section class="w-full">
     {{-- Encabezado institucional --}}
     <div class="space-y-6">
@@ -228,15 +229,28 @@
         </div>
         @endif
         @if($solicitud->estado === 'aprobada' && auth()->user()->can('solicitudes.export'))
-            <div class="pt-6 flex justify-center">
+            <div class="pt-6 flex justify-center gap-3">
+
                 <flux:button
                     as="a"
                     href="{{ route('calidad.solicitudes.estado.formato.pdf', $solicitud) }}"
                     icon="arrow-down-tray"
                     variant="primary"
+                    target="_blank"
+                    rel="noopener"
                     class="!bg-indigo-600 hover:!bg-indigo-700 !text-white">
                     Descargar formato
                 </flux:button>
+
+                @if(auth()->check() && auth()->user()->hasRole('Super Admin'))
+                    <flux:button
+                        icon="calendar-days"
+                        variant="outline"
+                        wire:click="openFechasFirmasModal">
+                        Fechas
+                    </flux:button>
+                @endif
+
             </div>
         @endif
     </div>
@@ -349,3 +363,72 @@
     </div>
 @endif
 </section>
+{{-- Modal: Fechas de firmas --}}
+<flux:modal
+    wire:model="showFechasFirmasModal"
+    title="Editar fechas de firmas"
+    icon="calendar-days"
+>
+    <div class="space-y-5 text-sm">
+        <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium">Fecha solicitante</label>
+                    <input
+                        type="date"
+                        class="mt-1 w-full rounded-md border px-3 py-2"
+                        wire:model.live="fechasFirmas.solicitante"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Responsable de proceso</label>
+                    <input
+                        type="date"
+                        class="mt-1 w-full rounded-md border px-3 py-2"
+                        wire:model.live="fechasFirmas.responsable"
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium">Controlador de documentos</label>
+                    <input
+                        type="date"
+                        class="mt-1 w-full rounded-md border px-3 py-2"
+                        wire:model.live="fechasFirmas.controlador"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Coordinación de Calidad</label>
+                    <input
+                        type="date"
+                        class="mt-1 w-full rounded-md border px-3 py-2"
+                        wire:model.live="fechasFirmas.coordinacion"
+                    >
+                </div>
+            </div>
+        </div>
+
+        {{-- Acciones --}}
+        <div class="flex justify-end gap-2">
+            <flux:button variant="ghost" @click="$wire.showFechasFirmasModal = false">
+                Cancelar
+            </flux:button>
+
+            <flux:button
+                variant="primary"
+                icon="check"
+                wire:click="saveFechasFirmas"
+                wire:target="saveFechasFirmas"
+                wire:loading.attr="disabled"
+            >
+                <span wire:loading.remove>Guardar</span>
+                <span wire:loading>Guardando…</span>
+            </flux:button>
+        </div>
+    </div>
+</flux:modal>
+</div>

@@ -24,10 +24,10 @@ class SolicitudesAprovadas extends PageWithDashboard
         ]);
     }
 
-    public function descargarFormato()
-    {
-        return redirect()->route('calidad.solicitudes.estado.formato.pdf', $this->solicitud->id);
-    }
+    //public function descargarFormato()
+    //{
+    //    return redirect()->route('calidad.solicitudes.estado.formato.pdf', $this->solicitud->id);
+    //}
 
     #[Layout('components.layouts.app')]
     public function render(): View

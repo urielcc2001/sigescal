@@ -34,7 +34,7 @@ class UploadFolder extends Component
         // 10 MB por archivo y solo PDF
         'files.*'       => 'file|mimes:pdf|max:10240', // 10,240 KB = 10 MB
         'relativePaths' => 'array',
-        'zipFile' => 'nullable|file|mimes:zip|max:30720', // 30 MB (en Kilobytes)
+        'zipFile' => 'nullable|file|mimes:zip,rar|max:30720', // 30 MB (en KB)
     ];
 
     /** Computed: ¿ya hay datos cargados? (para cambiar Subir -> Ver/Descargar) */
@@ -94,19 +94,21 @@ class UploadFolder extends Component
         $this->validateOnly('zipFile');
 
         if (! $this->zipFile) {
-            $this->addError('zipFile', 'Selecciona un archivo ZIP.');
+            $this->addError('zipFile', 'Selecciona un archivo ZIP o RAR.');
             return;
         }
 
-        // Carpeta donde se almacenarán los ZIP de lista maestra
+        // Carpeta donde se almacenarán los ZIP/RAR de lista maestra
         $dir = 'sgc/master/zips';
-
         Storage::disk('local')->makeDirectory($dir);
 
-        // Puedes usar un nombre fijo (para sobreescribir siempre el último)
+        // Nombre físico fijo en el disco (no importa para el usuario)
         $filename = 'lista-maestra.zip';
-
         $path = $this->zipFile->storeAs($dir, $filename, 'local');
+
+        // Guardar el nombre ORIGINAL con el que el usuario subió el archivo
+        $originalName = $this->zipFile->getClientOriginalName();
+        Storage::disk('local')->put($dir.'/lista-maestra.name', $originalName);
 
         // Limpiar input
         $this->reset('zipFile');
@@ -114,7 +116,7 @@ class UploadFolder extends Component
         // Forzar refresco de la propiedad hasData
         $this->dispatch('$refresh');
 
-        $this->flash('success', 'ZIP de Lista Maestra subido correctamente.');
+        $this->flash('success', 'Archivo comprimido subido correctamente.');
         $this->redirect(route('calidad.lista-maestra.index'), true);
     }
 
@@ -206,12 +208,20 @@ class UploadFolder extends Component
     /** Elimina el ZIP subido manualmente */
     public function deleteZip(): void
     {
-        if (Storage::disk('local')->exists($this->zipPath)) {
-            Storage::disk('local')->delete($this->zipPath);
+        $disk = Storage::disk('local');
+
+        if ($disk->exists($this->zipPath)) {
+            $disk->delete($this->zipPath);
+        }
+
+        // Borrar también el nombre original
+        $namePath = 'sgc/master/zips/lista-maestra.name';
+        if ($disk->exists($namePath)) {
+            $disk->delete($namePath);
         }
 
         $this->dispatch('$refresh');
-        session()->flash('ok', 'ZIP de Lista Maestra eliminado.');
+        session()->flash('ok', 'Archivo comprimido de Lista Maestra eliminado.');
     }
 
     public function render()

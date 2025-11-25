@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Carbon\CarbonImmutable;
 
 class SolicitudPdfController extends Controller
 {
@@ -61,6 +62,12 @@ class SolicitudPdfController extends Controller
             ] : null;
         })->filter()->values()->all();
 
+        // Asegurar fechas de firmas (solo se ponen por defecto si están vacías)
+        $this->asegurarFechasFirmas($solicitud);
+
+        // recarga por si acaso
+        $solicitud->refresh();
+
         // Render PDF
         $pdf = Pdf::loadView('pdf.solicitud-formato', [
                 'solicitud'     => $solicitud,
@@ -74,6 +81,41 @@ class SolicitudPdfController extends Controller
 
         $filename = 'Solicitud_'.$solicitud->folio.'.pdf';
         return $pdf->stream($filename); // o ->download($filename)
+    }
+
+    private function asegurarFechasFirmas(Solicitud $solicitud): void
+    {
+        // base = fecha del solicitante (si no, hoy) en CarbonImmutable
+        $base = $solicitud->fecha
+            ? $solicitud->fecha->copy()           // ya viene como CarbonImmutable
+            : CarbonImmutable::today();           // usamos CarbonImmutable
+
+        if (!$solicitud->fecha_firma_responsable) {
+            $solicitud->fecha_firma_responsable = $this->nextBusinessDay($base);
+        }
+
+        if (!$solicitud->fecha_firma_controlador) {
+            $solicitud->fecha_firma_controlador = $this->nextBusinessDay(
+                $solicitud->fecha_firma_responsable
+            );
+        }
+
+        if (!$solicitud->fecha_firma_coord_calidad) {
+            $solicitud->fecha_firma_coord_calidad = $this->nextBusinessDay(
+                $solicitud->fecha_firma_controlador
+            );
+        }
+
+        $solicitud->save();
+    }
+
+    private function nextBusinessDay(CarbonImmutable $date): CarbonImmutable
+    {
+        do {
+            $date = $date->addDay();   // OJO: immutable → retorna una nueva instancia
+        } while ($date->isWeekend());
+
+        return $date;
     }
 
     private function subdirectorSlugPorCodigo(?string $codigo): ?string
