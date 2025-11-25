@@ -124,43 +124,70 @@ class CrearSolicitud extends PageWithDashboard
     {
         $this->codigo = '';
 
-        if (!$areaId) {
-            return;
-        }
+        if (!$areaId) return;
 
         $area = $this->areas->firstWhere('id', $areaId);
-        if (!$area) {
-            return;
-        }
+        if (!$area) return;
 
-        // Prefijo de área: CA, AC, VI, etc.
         $prefijoArea = strtoupper($area->codigo ?? '');
-        if (!$prefijoArea) {
-            return;
-        }
+        if (!$prefijoArea) return;
 
-        // Prefijo base del código
+        // Prefijo base ITTUX-AC-
         $prefix = "ITTUX-{$prefijoArea}-";
 
-        $lastDoc = ListaMaestra::where('area_id', $areaId)
-            ->where('codigo', 'like', $prefix.'%')
-            ->orderBy('codigo', 'desc')
-            ->first();
+        // Obtener TODOS los códigos que comienzan con ITTUX-AC-
+        $documentos = ListaMaestra::where('area_id', $areaId)
+            ->where('codigo', 'like', "{$prefix}%")
+            ->pluck('codigo')
+            ->toArray();
 
-        $next = 1;
+        if (empty($documentos)) {
+            // No existe nada → arrancar en 001
+            $this->codigo = "{$prefix}001";
+            return;
+        }
 
-        if ($lastDoc) {
-            // Tomamos el ÚLTIMO número del código y lo incrementamos
-            if (preg_match('/(\d+)(?!.*\d)/', $lastDoc->codigo, $m)) {
-                $next = (int) $m[1] + 1;
+        // Buscar el mayor número principal o sub-código posible
+        $maxPrincipal = 0;
+        $maxSub = 0;
+        $lastTipo = 'PO'; // Asumimos PO si no se detecta
+
+        foreach ($documentos as $codigo) {
+            // Ejemplo: ITTUX-AC-PO-004-02
+            $parts = explode('-', $codigo); // ["ITTUX","AC","PO","004","02"]
+
+            if (count($parts) < 4) continue;
+
+            $tipo = $parts[2];
+            $principal = (int)$parts[3];
+
+            // Si tiene subnúmero
+            $sub = isset($parts[4]) ? (int)$parts[4] : null;
+
+            // Guardar el tipo usado más reciente
+            $lastTipo = $tipo;
+
+            // Buscar el mayor principal
+            if ($principal > $maxPrincipal) {
+                $maxPrincipal = $principal;
+                $maxSub = $sub ?? 0;
+            }
+            // Si es el mismo principal, revisar subnumeración
+            elseif ($principal === $maxPrincipal && $sub !== null && $sub > $maxSub) {
+                $maxSub = $sub;
             }
         }
 
-        // Consecutivo a 3 dígitos: 001, 002, 010, etc.
-        $consecutivo = str_pad((string)$next, 3, '0', STR_PAD_LEFT);
-
-        // Ejemplo sugerido: ITTUX-CA-001
-        $this->codigo = $prefix.$consecutivo;
+        // Ahora generamos el siguiente
+        if ($maxSub > 0) {
+            // Tiene subdocumentos → incremento el sub
+            $nuevoSub = str_pad($maxSub + 1, 2, '0', STR_PAD_LEFT);
+            $this->codigo = "{$prefix}{$lastTipo}-" . str_pad($maxPrincipal, 3, '0', STR_PAD_LEFT) . "-{$nuevoSub}";
+        } else {
+            // No tiene subdocumentos → incrementar principal
+            $nuevoPrincipal = str_pad($maxPrincipal + 1, 3, '0', STR_PAD_LEFT);
+            $this->codigo = "{$prefix}{$lastTipo}-{$nuevoPrincipal}";
+        }
     }
 
 

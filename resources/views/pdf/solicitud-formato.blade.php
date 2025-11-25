@@ -2,7 +2,21 @@
     use Illuminate\Support\Carbon;
 
     $doc   = $solicitud->documento;
-    $fecha = $solicitud->fecha ? Carbon::parse($solicitud->fecha)->format('d/m/Y') : '';
+    $fechaSolicitante = $solicitud->fecha
+        ? $solicitud->fecha->format('d/m/Y')
+        : '';
+
+    $fechaResp = $solicitud->fecha_firma_responsable
+        ? $solicitud->fecha_firma_responsable->format('d/m/Y')
+        : '';
+
+    $fechaCtrl = $solicitud->fecha_firma_controlador
+        ? $solicitud->fecha_firma_controlador->format('d/m/Y')
+        : '';
+
+    $fechaCoord = $solicitud->fecha_firma_coord_calidad
+        ? $solicitud->fecha_firma_coord_calidad->format('d/m/Y')
+        : '';
 
     // Logos (rutas absolutas para DomPDF)
     $logoSEP     = public_path('logos/Logo-sep.png');
@@ -271,7 +285,7 @@ th, td { padding:6px; vertical-align:top; }
         </tr>
         <tr>
         <td>FECHA:</td>
-        <td>{{ $fecha }}</td>
+        <td>{{ $fechaSolicitante }}</td>
         </tr>
     </table>
     </td>
@@ -413,29 +427,32 @@ th, td { padding:6px; vertical-align:top; }
       <th>Fecha</th>
     </tr>
   </thead>
-  <tbody>
+<tbody>
     <tr>
-      <td>Entrega por el Solicitante</td>
-      <td>{{ optional($solicitud->usuario)->name }}</td>
-      <td></td>
-      <td></td>
+        <td>Entrega por el Solicitante</td>
+        <td style="text-align:center;">{{ optional($solicitud->usuario)->name }}</td>
+        <td></td>
+        <td style="text-align:center;">{{ $fechaSolicitante }}</td>
     </tr>
     <tr>
-      <td>Revisión del Responsable de proceso</td>
-      <td>{{ $subdirNombre ?? '—' }}</td>
-      <td></td><td></td>
+        <td>Revisión del Responsable de proceso</td>
+        <td style="text-align:center;">{{ $subdirNombre ?? '—' }}</td>
+        <td></td>
+        <td style="text-align:center;">{{ $fechaResp }}</td>
     </tr>
     <tr>
-      <td>Documenta el Controlador de Documentos</td>
-      <td>{{ $ctrlNombre ?? 'VACANTE' }}</td>
-      <td></td><td></td>
+        <td>Documenta el Controlador de Documentos</td>
+        <td style="text-align:center;">{{ $ctrlNombre ?? 'VACANTE' }}</td>
+        <td></td>
+        <td style="text-align:center;">{{ $fechaCtrl }}</td>
     </tr>
     <tr>
-      <td>Recibe la Coordinación de Calidad</td>
-      <td>{{ $coordNombre ?? 'VACANTE' }}</td>
-      <td></td><td></td>
+        <td>Recibe la Coordinación de Calidad</td>
+        <td style="text-align:center;">{{ $coordNombre ?? 'VACANTE' }}</td>
+        <td></td>
+        <td style="text-align:center;">{{ $fechaCoord }}</td>
     </tr>
-  </tbody>
+</tbody>
 </table>
 </body>
 </html>

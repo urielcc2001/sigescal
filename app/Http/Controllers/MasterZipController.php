@@ -57,15 +57,25 @@ class MasterZipController extends Controller
 
     public function downloadUploadedZip()
     {
-        // Ruta fija donde guardamos el ZIP subido por el usuario
-        $path = 'sgc/master/zips/lista-maestra.zip';
+        $zipPath  = 'sgc/master/zips/lista-maestra.zip';
+        $namePath = 'sgc/master/zips/lista-maestra.name';
 
-        if (!Storage::disk('local')->exists($path)) {
-            abort(404, 'No se encontró ningún ZIP subido.');
+        $disk = Storage::disk('local');
+
+        if (! $disk->exists($zipPath)) {
+            abort(404, 'No se encontró ningún archivo comprimido subido.');
         }
 
-        return Storage::disk('local')->download($path, 'ListaMaestra_Subida.zip', [
-            'Content-Type' => 'application/zip',
+        // Nombre original que guardamos en uploadZip()
+        $downloadName = $disk->exists($namePath)
+            ? trim($disk->get($namePath))
+            : 'ListaMaestra_Subida.zip';
+
+        // Intentar detectar el mime real (zip o rar)
+        $mime = $disk->mimeType($zipPath) ?: 'application/octet-stream';
+
+        return $disk->download($zipPath, $downloadName, [
+            'Content-Type' => $mime,
         ]);
     }
 

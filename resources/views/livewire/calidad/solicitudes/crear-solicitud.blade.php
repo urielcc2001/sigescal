@@ -64,6 +64,9 @@
 
                 <div>
                     <label class="block text-sm font-medium">Código del documento (propuesto)</label>
+                    <p class="text-xs text-neutral-500 -mt-1">
+                        Generado según el último registro del área. Verifique en la Lista Maestra que sea correcto.
+                    </p>
                     <div class="mt-1 relative">
                         <input type="text"
                             class="w-full rounded-md border p-2 pr-9"
@@ -186,7 +189,7 @@
 
         @error('tipo') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
     </div>
-
+    @if($tipo !== 'creacion')
     {{-- Bloque: Descripción del cambio --}}
     <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">
         <div class="text-sm font-semibold mb-3">DESCRIPCIÓN DEL CAMBIO</div>
@@ -316,6 +319,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Bloque: Justificación --}}
     <div class="border rounded-md p-4 bg-white/60 border-gray-200 dark:bg-gray-900/50 dark:border-gray-700">

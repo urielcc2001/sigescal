@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('solicitudes', function (Blueprint $table) {
+            $table->date('fecha_firma_responsable')->nullable();
+            $table->date('fecha_firma_controlador')->nullable();
+            $table->date('fecha_firma_coord_calidad')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('solicitudes', function (Blueprint $table) {
+            $table->dropColumn([
+                'fecha_firma_responsable',
+                'fecha_firma_controlador',
+                'fecha_firma_coord_calidad',
+            ]);
+        });
+    }
+};
