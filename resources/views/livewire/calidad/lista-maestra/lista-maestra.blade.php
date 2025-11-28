@@ -71,17 +71,17 @@
             <div class="mt-1">
                 @if(auth()->user()?->hasRole('Super Admin'))
                     <flux:button icon="document-arrow-down" variant="outline" class="w-full sm:w-auto"
-                                @click="$wire.openExportModal()">Descargar PDF</flux:button>
+                                @click="$wire.openExportModal()">Descargar lista maestra</flux:button>
                 @elseif(auth()->user()?->can('lista-maestra.download'))
                     <flux:button icon="document-arrow-down" variant="outline" class="w-full sm:w-auto"
                                 title="Descarga con la fecha más reciente"
-                                @click="$wire.quickExportLatest()">Descargar PDF</flux:button>
+                                @click="$wire.quickExportLatest()">Descargar lista maestra</flux:button>
                 @elseif(auth()->user()?->can('lista-maestra.view'))
                     <flux:button icon="lock-closed" variant="outline"
                                 class="w-full sm:w-auto opacity-60 cursor-not-allowed"
                                 disabled
                                 title="Descargas deshabilitadas por el administrador">
-                        Descargar PDF
+                        Descargar lista maestra
                     </flux:button>
                     <div class="mt-1 text-xs text-zinc-500">Descargas deshabilitadas por el administrador.</div>
                 @endif

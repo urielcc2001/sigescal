@@ -31,7 +31,7 @@
                     as="a"
                     href="{{ $downloadRoute }}"
                     variant="outline">
-                    Descargar ZIP
+                    Descargar manual
                 </flux:button>
             @endcan
         </div>

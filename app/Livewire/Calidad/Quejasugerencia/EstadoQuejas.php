@@ -4,56 +4,37 @@ namespace App\Livewire\Calidad\Quejasugerencia;
 
 use App\Livewire\PageWithDashboard;
 use App\Models\Complaint;
-use Illuminate\Support\Facades\Auth;
-use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 
 class EstadoQuejas extends PageWithDashboard
 {
-    use WithPagination;
+    public string $folio = '';
 
-    public string $search = '';
-    public int $perPage = 10;
-
-    // Modal
-    public bool $showView = false;
     public ?int $selectedId = null;
+    public bool $showView = false;
 
-    protected $queryString = [
-        'search'  => ['except' => ''],
-        'page'    => ['except' => 1],
-        'perPage' => ['except' => 10],
-    ];
+    public ?Complaint $found = null;
 
-    public function updatingSearch(): void
+    public function buscar(): void
     {
-        $this->resetPage();
-    }
+        $this->resetErrorBag();
 
-    public function getRowsProperty()
-    {
-        $alumno = Auth::guard('students')->user();
+        if (trim($this->folio) === '') {
+            $this->addError('folio', 'Debe ingresar un folio.');
+            return;
+        }
 
-        return Complaint::query()
-            ->where('student_id', $alumno->id)
-            ->when($this->search !== '', function ($q) {
-                $term = '%' . trim($this->search) . '%';
-                $q->where(function ($qq) use ($term) {
-                    $qq->where('folio', 'like', $term)
-                       ->orWhere('tipo', 'like', $term)
-                       ->orWhere('estado', 'like', $term)
-                       ->orWhere('descripcion', 'like', $term);
-                });
-            })
-            ->orderByDesc('created_at')
-            ->paginate($this->perPage);
+        $this->found = Complaint::where('folio', trim($this->folio))->first();
+
+        if (!$this->found) {
+            $this->addError('folio', 'No se encontró ninguna queja o sugerencia con ese folio.');
+        }
     }
 
     public function view(int $id): void
     {
-        // Solo guardamos el ID; el modelo lo resolvemos con un Computed
         $this->selectedId = $id;
-        $this->showView   = true;
+        $this->showView = true;
     }
 
     public function closeView(): void
@@ -66,17 +47,13 @@ class EstadoQuejas extends PageWithDashboard
     {
         if (!$this->selectedId) return null;
 
-        $alumnoId = Auth::guard('students')->id();
-
-        return Complaint::query()
-            ->where('student_id', $alumnoId)
-            ->find($this->selectedId);
+        return Complaint::find($this->selectedId);
     }
 
     public function render()
     {
         return view('livewire.calidad.quejasugerencia.estado-quejas', [
-            'rows' => $this->rows,
+            'found' => $this->found,
         ]);
     }
 }

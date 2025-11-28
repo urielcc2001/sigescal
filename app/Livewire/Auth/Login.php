@@ -11,7 +11,6 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Illuminate\Support\Facades\Route;
 
 #[Layout('components.layouts.auth')]
 class Login extends Component
@@ -32,41 +31,21 @@ class Login extends Component
     public function login(): void
     {
         $this->validate();
+
         $this->ensureIsNotRateLimited();
 
-        $creds = ['email' => $this->email, 'password' => $this->password];
-        $ok = false;
-        $guardUsed = 'web';
-
-        // 1) Si es correo institucional, intenta primero como estudiante
-        if (str_ends_with(strtolower($this->email), '@tuxtepec.tecnm.mx')) {
-            if (Auth::guard('students')->attempt($creds, false)) {
-                $ok = true;
-                $guardUsed = 'students';
-            }
-        }
-
-        // 2) Si no entró por students (o no era institucional), intenta como usuario interno
-        if (! $ok && Auth::guard('web')->attempt($creds, false)) {
-            $ok = true;
-            $guardUsed = 'web';
-        }
-
-        if (! $ok) {
+        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
-            throw ValidationException::withMessages(['email' => __('auth.failed')]);
+
+            throw ValidationException::withMessages([
+                'email' => __('auth.failed'),
+            ]);
         }
 
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        // Redirección según guard
-        $route = ($guardUsed === 'students' && Route::has('students.dashboard'))
-            ? route('students.dashboard', absolute: false)
-            : route('dashboard', absolute: false);
-
-        $this->redirectIntended(default: $route, navigate: true);
-
+        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 
     /**
