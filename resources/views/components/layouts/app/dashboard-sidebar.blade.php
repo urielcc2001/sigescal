@@ -76,18 +76,29 @@
                 </flux:navlist.group>
             @endcanany
 
-            {{-- LISTA MAESTRA --}}
+            {{-- Descargas --}}
             @canany(['lista-maestra.view','lista-maestra.export'])
-                <flux:navlist.group heading="Lista Maestra" class="grid">
+                <flux:navlist.group heading="Descargas" class="grid">
                     @can('lista-maestra.view')
                         <flux:navlist.item
                             icon="book-open"
                             href="{{ route('calidad.lista-maestra.index') }}"
                             :current="request()->routeIs('calidad.lista-maestra.index')"
-                            wire:navigate>
-                            Ver lista maestra
+                            wire:navigate
+                        >
+                            Lista maestra
                         </flux:navlist.item>
                     @endcan
+
+                    {{-- NUEVO: Información Documentada --}}
+                    <flux:navlist.item
+                        icon="book-open"
+                        href="{{ route('calidad.documentacion.index') }}"
+                        :current="request()->routeIs('calidad.documentacion.index')"
+                        wire:navigate
+                    >
+                        Información Documentada
+                    </flux:navlist.item>
                 </flux:navlist.group>
             @endcanany
 
@@ -107,6 +118,7 @@
             @endcanany
 
             {{-- QUEJAS Y SUGERENCIAS (alumnos) --}}
+            {{--
             @auth('students')
                 <flux:navlist.group heading="Quejas y sugerencias" class="grid">
                     <flux:navlist.item
@@ -125,6 +137,7 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
             @endauth
+            --}}
 
             {{-- QUEJAS Y SUGERENCIAS (admin / responsables) --}}
             @auth
@@ -151,6 +164,12 @@
                 @endunless
             @endauth
 
+            @php
+                $ocultarCuenta = request()->routeIs('quejas.form')
+                    || request()->routeIs('quejas.estado-publico');
+            @endphp
+
+            @unless($ocultarCuenta)
             {{-- CUENTA --}}
             <flux:navlist.group heading="Cuenta" class="grid">
                 <flux:navlist.item
@@ -161,6 +180,7 @@
                     Mi perfil
                 </flux:navlist.item>
             </flux:navlist.group>
+            @endunless
 
         </flux:navlist>
 

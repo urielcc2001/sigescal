@@ -14,6 +14,8 @@ use App\Livewire\Calidad\Quejasugerencia\EstadoQuejas;
 use App\Livewire\Calidad\Quejasugerencia\RevisarQuejas;
 use App\Http\Controllers\ComplaintPdfController;
 use App\Http\Controllers\MasterZipController;
+use App\Livewire\Calidad\ListaMaestra\Documentation;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', \App\Livewire\Home::class)->name('home');
 
@@ -21,17 +23,23 @@ Route::get('/admin/quejas', \App\Livewire\Calidad\Quejasugerencia\RevisarQuejas:
     ->middleware(['auth', 'can:quejas.review'])
     ->name('admin.quejas.index');
 
-Route::get('/dashboard', \App\Livewire\Dashboard::class)
-    ->middleware('auth:web,students')   // acepta cualquiera de los dos
-    ->name('dashboard');
+Route::get('/dashboard', \App\Livewire\Dashboard::class)->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth:students')->group(function () {
-    Route::get('/alumnos/quejas', Quejas::class)
-        ->name('students.quejas.new');
+//Route::middleware('auth:students')->group(function () {
+//    Route::get('/alumnos/quejas', Quejas::class)
+//        ->name('students.quejas.new');
+//
+//    Route::get('/alumnos/estado-quejas', EstadoQuejas::class)
+//        ->name('students.quejas.index');
+//});
 
-    Route::get('/alumnos/estado-quejas', EstadoQuejas::class)
-        ->name('students.quejas.index');
-});
+// Formulario público para enviar la queja
+Route::get('/quejas', Quejas::class)
+    ->name('quejas.form');
+
+// Consulta pública por folio – usando tu mismo componente EstadoQuejas
+Route::get('/quejas/estado', EstadoQuejas::class)
+    ->name('quejas.estado-publico');
 
 Route::middleware(['auth', 'can:lista-maestra.files.download'])->group(function () {
     Route::get('/lista-maestra/zip', [MasterZipController::class, 'zip'])
@@ -129,6 +137,29 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('calidad/organizacion/personal', \App\Livewire\Calidad\Organizacion\Personal::class)
         ->middleware('can:org.personal.view')
         ->name('calidad.organizacion.personal');
+        
+    // ==== Informacion documentada ====
+    Route::get('calidad/documentacion', Documentation::class)
+        ->name('calidad.documentacion.index');
+
+    // Descarga del ZIP/RAR
+    Route::get('calidad/documentacion/descargar', function () {
+        $disk = Storage::disk('local');
+
+        $zipDir      = 'sgc/info-doc/zips';
+        $zipFilename = 'informacion-documentada.zip';
+        $nameFile    = 'informacion-documentada.name';
+
+        $path = $zipDir . '/' . $zipFilename;
+
+        abort_unless($disk->exists($path), 404);
+
+        $downloadName = $disk->exists($zipDir . '/' . $nameFile)
+            ? trim($disk->get($zipDir . '/' . $nameFile))
+            : $zipFilename;
+
+        return $disk->download($path, $downloadName);
+    })->name('calidad.documentacion.download');
 });
 
 require __DIR__.'/auth.php';
