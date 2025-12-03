@@ -7,15 +7,34 @@
     $safe = fn($v, $alt='__________________________________') => ($v ?? '') !== '' ? $v : $alt;
     $safe_short = fn($v, $alt='________') => ($v ?? '') !== '' ? $v : $alt;
 
+    // 🔹 Mapa código → nombre de carrera
+    $careerMap = [
+        'LAOK'  => 'Licenciatura en Administración',
+        'LCPOK' => 'Licenciatura en Contador Público',
+        'IBQOK' => 'Ingeniería Bioquímica',
+        'ICOK'  => 'Ingeniería Civil',
+        'IEOK'  => 'Ingeniería Electrónica',
+        'IEMOK' => 'Ingeniería Electromecánica',
+        'IIOK'  => 'Ingeniería Informática',
+        'IGEOK' => 'Ingeniería en Gestión Empresarial',
+        'ISCOK' => 'Ingeniería en Sistemas Computacionales',
+        'IDAOK' => 'Ingeniería en Desarrollo de Aplicaciones',
+    ];
 
     // Mapeo según instructivo 1–15
     $fecha_queja   = $c->created_at;                  
     $folio         = $c->folio ?? $c->id;             
     $nombre        = $c->nombre     ?? $s->nombre     ?? null; 
-    $correo        = $c->email      ?? $s->email      ?? null; // Se usa para Email
+    $correo        = $c->email      ?? $s->email      ?? null; 
     $telefono      = $c->telefono   ?? $s->telefono   ?? null; 
     $numcontrol    = $c->numcontrol ?? $s->numcontrol ?? null; 
-    $carrera       = $c->carrera    ?? $s->carrera_code ?? null; 
+
+    // 🔹 Primero obtenemos el código, luego lo traducimos a nombre
+    $carreraCode   = $c->carrera    ?? $s->carrera_code ?? null; 
+    $carrera       = $carreraCode && isset($careerMap[$carreraCode])
+                        ? $careerMap[$carreraCode]
+                        : $carreraCode; // si algún día ya viene el nombre, lo respeta
+
     $semestre      = $c->semestre   ?? $s->semestre   ?? null; 
     $grupo         = $c->grupo      ?? $s->grupo      ?? null; 
     $turno         = $c->turno      ?? $s->turno      ?? null; 
