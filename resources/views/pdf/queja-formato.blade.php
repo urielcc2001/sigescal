@@ -393,9 +393,9 @@
                     <div class="sig-space-large"></div>
                     <hr class="sig-line-hr">
                     <div class="sig-text">
-                        {{ $subdirNombre ?? 'SUBDIRECCIÓN (S/F)' }}
+                        {{ $subdirNombre ? mb_strtoupper($subdirNombre, 'UTF-8') : 'SUBDIRECCIÓN (S/F)' }}
                         <br>
-                        Subdirector del Área correspondiente
+                        {{ $subdirCargo ? mb_strtoupper($subdirCargo, 'UTF-8') : 'SUBDIRECTOR DEL ÁREA CORRESPONDIENTE' }}
                     </div>
                 </div>
             </td>
