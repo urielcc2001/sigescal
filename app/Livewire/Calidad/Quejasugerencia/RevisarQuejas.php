@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\WithPagination;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class RevisarQuejas extends PageWithDashboard
 {
     use WithPagination;
+    use LivewireAlert;
 
     public string $search = '';
     public int $perPage = 10;
@@ -144,7 +146,11 @@ class RevisarQuejas extends PageWithDashboard
         $row = Complaint::findOrFail($id);
         $row->estado = 'en_proceso';
         $row->save();
-        // $this->dispatch('toast', type: 'info', message: 'Marcada en proceso'); // si usas toasts
+        $this->alert('info', "La queja {$row->folio} fue marcada como EN PROCESO.", [
+            'position' => 'top-end',
+            'timer'    => 3000,
+            'toast'    => true,
+        ]);    
     }
 
     /** Guardar respuesta y marcar como respondida */
@@ -170,6 +176,12 @@ class RevisarQuejas extends PageWithDashboard
         $row->save();
 
         $this->closeView();
+
+                $this->alert('success', "Respuesta registrada para la queja {$row->folio}.", [
+            'position' => 'top-end',
+            'timer'    => 3500,
+            'toast'    => true,
+        ]);
     }
 
     /** Cerrar definitivamente (opcional) */
@@ -178,6 +190,12 @@ class RevisarQuejas extends PageWithDashboard
         $row = Complaint::findOrFail($id);
         $row->estado = 'cerrada';
         $row->save();
+
+        $this->alert('success', "La queja {$row->folio} fue cerrada.", [
+            'position' => 'top-end',
+            'timer'    => 3000,
+            'toast'    => true,
+        ]);
     }
 
     public function render()

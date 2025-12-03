@@ -4,13 +4,15 @@ namespace App\Livewire\Calidad\Quejasugerencia;
 
 use App\Livewire\PageWithDashboard;
 use App\Models\Complaint;
-use App\Models\Student; // 👈 modelo de alumnos
+use App\Models\Student;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class Quejas extends PageWithDashboard
 {
+    use LivewireAlert;
     public string $fecha;
     public ?string $folio = null;
 
@@ -155,7 +157,11 @@ class Quejas extends PageWithDashboard
 
         $this->descripcion = '';
 
-        session()->flash('ok', "Tu solicitud {$c->folio} fue enviada.");
+        $this->alert('success', "Tu queja {$c->folio} fue enviada correctamente.", [
+            'position' => 'top-end',
+            'timer'    => 3500,
+            'toast'    => true,
+        ]);
     }
 
     public function confirmSubmit(): void
