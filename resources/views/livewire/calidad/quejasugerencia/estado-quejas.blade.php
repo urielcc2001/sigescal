@@ -90,6 +90,24 @@
                 @endif
             </div>
 
+            {{-- BOTÓN DESCARGAR FORMATO --}}
+            <div class="mt-6 flex justify-end">
+                @if($found->respuesta && in_array($found->estado, ['respondida', 'cerrada']))
+                    <flux:button
+                        tag="a"
+                        icon="arrow-down-tray"
+                        variant="outline"
+                        href="{{ route('quejas.publico.pdf', $found) }}"
+                        target="_blank"
+                    >
+                        Descargar formato PDF
+                    </flux:button>
+                @else
+                    <p class="text-xs text-neutral-500">
+                        El formato PDF estará disponible cuando tu queja haya sido respondida.
+                    </p>
+                @endif
+            </div>
         </div>
     @endif
 </div>

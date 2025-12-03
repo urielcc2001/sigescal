@@ -19,6 +19,7 @@ class Complaint extends Model
         'respondida_at',
         'visto_por_alumno_at',
         'origen_ip',
+        'subdirector_slug',
     ];
 
     protected $casts = [

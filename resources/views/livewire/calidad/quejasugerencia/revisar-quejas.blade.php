@@ -218,6 +218,30 @@
                     </div>
                 </div>
 
+                {{-- 2.1) Subdirector correspondiente --}}
+                <div class="max-w-sm">
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium">
+                            Subdirector/a correspondiente
+                        </label>
+                        <select
+                            class="w-full rounded-md border px-3 py-2
+                                bg-zinc-50 text-zinc-900 border-zinc-300
+                                focus:outline-none focus:ring-2 focus:ring-zinc-400/30 focus:border-zinc-400
+                                dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-600 dark:[color-scheme:dark]"
+                            wire:model.live="subdirector_slug"
+                        >
+                            <option value="">Seleccione una opción</option>
+                            @foreach($subdirectoresLabels as $slug => $label)
+                                <option value="{{ $slug }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @error('subdirector_slug')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 {{-- 3) Descripción --}}
                 <div>
                     <div class="mb-1 text-neutral-500">Descripción</div>

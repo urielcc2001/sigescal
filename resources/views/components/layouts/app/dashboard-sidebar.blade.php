@@ -182,6 +182,30 @@
             </flux:navlist.group>
             @endunless
 
+            @guest
+                <flux:navlist.group heading="Alumnos" class="grid">
+
+                    {{-- Enviar Queja / Sugerencia --}}
+                    <flux:navlist.item
+                        icon="pencil-square"
+                        href="{{ route('quejas.form') }}"
+                        :current="request()->routeIs('quejas.form')"
+                        wire:navigate>
+                        Enviar queja/sugerencia
+                    </flux:navlist.item>
+
+                    {{-- Estado de la Queja --}}
+                    <flux:navlist.item
+                        icon="magnifying-glass"
+                        href="{{ route('quejas.estado-publico') }}"
+                        :current="request()->routeIs('quejas.estado-publico')"
+                        wire:navigate>
+                        Consultar estado
+                    </flux:navlist.item>
+
+                </flux:navlist.group>
+            @endguest
+
         </flux:navlist>
 
         <flux:spacer/>

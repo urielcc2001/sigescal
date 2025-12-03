@@ -23,6 +23,9 @@ Route::get('/admin/quejas', \App\Livewire\Calidad\Quejasugerencia\RevisarQuejas:
     ->middleware(['auth', 'can:quejas.review'])
     ->name('admin.quejas.index');
 
+Route::get('/quejas/{complaint}/formato.pdf', [ComplaintPdfController::class, 'publicDownload'])
+    ->name('quejas.publico.pdf');
+
 Route::get('/dashboard', \App\Livewire\Dashboard::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 //Route::middleware('auth:students')->group(function () {
