@@ -45,7 +45,7 @@
     // Checkbox visual
     $cb = fn($on) => $on ? 'X' : '';
     $h = fn($v) => e((string)$v); 
-
+    $soloParteInferior = $soloParteInferior ?? false;
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -264,79 +264,79 @@
 </footer>
 
 <main class="form-container">
-    
-    {{-- INFORMACIÓN INICIAL (Fecha, Folio, Confidencialidad) - NO FIJA --}}
-    <div class="info-inicial">
-        <table class="meta">
-            <tr>
-                <td style="width: 50%;">
-                    <span class="label">Fecha: </span>
-                    <span class="valor valor-largo" style="min-width: 150px; border-bottom: 1px solid #000;">{{ $d($fecha_queja) }}</span>
-                </td>
-                <td class="right" style="width: 50%; padding-right: 0;">
-                    FOLIO: <span class="valor valor-corto" style="border-bottom: 1px solid #000;">{{ $safe_short($folio) }}</span>
-                </td>
-            </tr>
-        </table>
-        
-        <div class="confidencialidad">
-            Para validar su queja y/o sugerencia debe requisitar algún dato que nos permita localizarlo y darle respuesta, esta información es de carácter <strong>CONFIDENCIAL</strong>.
+    @if(!$soloParteInferior)
+        {{-- INFORMACIÓN INICIAL (Fecha, Folio, Confidencialidad) - NO FIJA --}}
+        <div class="info-inicial">
+            <table class="meta">
+                <tr>
+                    <td style="width: 50%;">
+                        <span class="label">Fecha: </span>
+                        <span class="valor valor-largo" style="min-width: 150px; border-bottom: 1px solid #000;">{{ $d($fecha_queja) }}</span>
+                    </td>
+                    <td class="right" style="width: 50%; padding-right: 0;">
+                        FOLIO: <span class="valor valor-corto" style="border-bottom: 1px solid #000;">{{ $safe_short($folio) }}</span>
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="confidencialidad">
+                Para validar su queja y/o sugerencia debe requisitar algún dato que nos permita localizarlo y darle respuesta, esta información es de carácter <strong>CONFIDENCIAL</strong>.
+            </div>
         </div>
-    </div>
 
-    {{-- DATOS DEL INTERESADO --}}
-    <div class="data-row">
-        {{-- Nombre y Email en la misma línea --}}
-        <div class="campo campo-nombre">
-            <span class="label">Nombre: </span>
-            <span class="valor valor-nombre">{{ $safe($nombre, '__________________________________') }}</span>
+        {{-- DATOS DEL INTERESADO --}}
+        <div class="data-row">
+            {{-- Nombre y Email en la misma línea --}}
+            <div class="campo campo-nombre">
+                <span class="label">Nombre: </span>
+                <span class="valor valor-nombre">{{ $safe($nombre, '__________________________________') }}</span>
+            </div>
+            <div class="campo campo-correo">
+                <span class="label">Email: </span>
+                <span class="valor valor-correo">{{ $safe($correo, '_________________________') }}</span>
+            </div>
         </div>
-        <div class="campo campo-correo">
-            <span class="label">Email: </span>
-            <span class="valor valor-correo">{{ $safe($correo, '_________________________') }}</span>
-        </div>
-    </div>
 
-    <div class="data-row">
-        <div class="campo" style="margin-right: 10px;">
-            <span class="label">Tel.: </span>
-            <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($telefono, '__________________') }}</span>
+        <div class="data-row">
+            <div class="campo" style="margin-right: 10px;">
+                <span class="label">Tel.: </span>
+                <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($telefono, '__________________') }}</span>
+            </div>
+            <div class="campo">
+                <span class="label">No. de Control: </span>
+                <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($numcontrol, '__________________') }}</span>
+            </div>
         </div>
-        <div class="campo">
-            <span class="label">No. de Control: </span>
-            <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($numcontrol, '__________________') }}</span>
-        </div>
-    </div>
 
-    <div class="data-row">
-        <div class="campo" style="margin-right: 10px;">
-            <span class="label">Carrera: </span>
-            <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($carrera, '__________________') }}</span>
+        <div class="data-row">
+            <div class="campo" style="margin-right: 10px;">
+                <span class="label">Carrera: </span>
+                <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($carrera, '__________________') }}</span>
+            </div>
+            <div class="campo">
+                <span class="label">Semestre: </span>
+                <span class="valor valor-corto">{{ $safe_short($semestre, '______') }}</span>
+            </div>
+            <div class="campo">
+                <span class="label">Grupo: </span>
+                <span class="valor valor-corto">{{ $safe_short($grupo, '_______') }}</span>
+            </div>
         </div>
-        <div class="campo">
-            <span class="label">Semestre: </span>
-            <span class="valor valor-corto">{{ $safe_short($semestre, '______') }}</span>
-        </div>
-        <div class="campo">
-            <span class="label">Grupo: </span>
-            <span class="valor valor-corto">{{ $safe_short($grupo, '_______') }}</span>
-        </div>
-    </div>
 
-    <div class="data-row">
-        <div class="campo" style="margin-right: 10px;">
-            <span class="label">Turno: </span>
-            <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($turno, '______________') }}</span>
+        <div class="data-row">
+            <div class="campo" style="margin-right: 10px;">
+                <span class="label">Turno: </span>
+                <span class="valor valor-largo" style="min-width: 180px;">{{ $safe($turno, '______________') }}</span>
+            </div>
+            <div class="campo">
+                <span class="label">Aula: </span>
+                <span class="valor valor-corto">{{ $safe_short($aula, '______') }}</span>
+            </div>
         </div>
-        <div class="campo">
-            <span class="label">Aula: </span>
-            <span class="valor valor-corto">{{ $safe_short($aula, '______') }}</span>
-        </div>
-    </div>
 
-    {{-- LÍNEA DE CORTE --}}
-    <div class="cut-line"></div>
-
+        {{-- LÍNEA DE CORTE --}}
+        <div class="cut-line"></div>
+    @endif
     {{-- Sección de Queja / Sugerencia --}}
     <div class="seccion-desc">
         <span class="label">Describa su:</span>
@@ -374,7 +374,7 @@
                     <div class="sig-space-large"></div>
                     <hr class="sig-line-hr">
                     <div class="sig-text">
-                        Nombre y Firma 
+                        {{ $subdirNombre ?? 'SUBDIRECCIÓN (S/F)' }}
                         <br>
                         Subdirector del Área correspondiente
                     </div>
@@ -386,14 +386,18 @@
                     <div class="sig-space-large"></div>
                     <hr class="sig-line-hr">
                     <div class="sig-text">
-                        Nombre y Firma
+                        {{ $complaint->student?->nombre
+                                ? mb_strtoupper($complaint->student->nombre, 'UTF-8')
+                                : 'NOMBRE Y FIRMA' }}
                         <br>
                         Interesado/a
                     </div>
                 </div>
                 <div class="sig-fecha">
                     <span class="label">Fecha: </span>
-                    <span class="valor valor-corto" style="min-width: 100px; border-bottom: 1px solid #000;">{{ $d($fecha_resp) }}</span>
+                    <span class="valor valor-corto" style="min-width: 100px; border-bottom: 1px solid #000;">
+                        {{ $d($fecha_resp) }}
+                    </span>
                 </div>
             </td>
         </tr>

@@ -78,7 +78,7 @@
             {{-- Correo institucional --}}
             <div>
                 <flux:label>Correo institucional</flux:label>
-                <flux:input type="email" wire:model.defer="email" placeholder="correo@ittux.edu.mx" />
+                <flux:input type="email" wire:model.defer="email" placeholder="correo@tuxtepec.tecnm.mx" />
                 @error('email') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
@@ -94,16 +94,16 @@
                 <flux:label>Carrera</flux:label>
                 <flux:select wire:model.defer="carrera_code" class="w-full">
                     <option value="">Seleccione una opción</option>
-                    <option value="LAOK">Licenciatura en Administración (LAOK)</option>
-                    <option value="LCPOK">Licenciatura en Contador Público (LCPOK)</option>
-                    <option value="IBQOK">Ingeniería Bioquímica (IBQOK)</option>
-                    <option value="ICOK">Ingeniería Civil (ICOK)</option>
-                    <option value="IEOK">Ingeniería Electrónica (IEOK)</option>
-                    <option value="IEMOK">Ingeniería Electromecánica (IEMOK)</option>
-                    <option value="IIOK">Ingeniería Informática (IIOK)</option>
-                    <option value="IGEOK">Ingeniería en Gestión Empresarial (IGEOK)</option>
-                    <option value="ISCOK">Ingeniería en Sistemas Computacionales (ISCOK)</option>
-                    <option value="IDAOK">Ingeniería en Desarrollo de Aplicaciones (IDAOK)</option>
+                    <option value="LAOK">Licenciatura en Administración</option>
+                    <option value="LCPOK">Licenciatura en Contador Público</option>
+                    <option value="IBQOK">Ingeniería Bioquímica</option>
+                    <option value="ICOK">Ingeniería Civil</option>
+                    <option value="IEOK">Ingeniería Electrónica</option>
+                    <option value="IEMOK">Ingeniería Electromecánica</option>
+                    <option value="IIOK">Ingeniería Informática</option>
+                    <option value="IGEOK">Ingeniería en Gestión Empresarial</option>
+                    <option value="ISCOK">Ingeniería en Sistemas Computacionales</option>
+                    <option value="IDAOK">Ingeniería en Desarrollo de Aplicaciones</option>
                 </flux:select>
                 @error('carrera_code') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>

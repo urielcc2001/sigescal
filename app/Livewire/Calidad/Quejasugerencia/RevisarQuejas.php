@@ -4,6 +4,7 @@ namespace App\Livewire\Calidad\Quejasugerencia;
 
 use App\Livewire\PageWithDashboard;
 use App\Models\Complaint;
+use App\Models\OrgPosition;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -30,6 +31,12 @@ class RevisarQuejas extends PageWithDashboard
     #[Validate('required|string|min:5|max:4000')]
     public string $respuestaText = '';
 
+    // NUEVO: selector de subdirector
+    public ?string $subdirector_slug = null;
+
+    public array $subdirectoresLabels = [];
+
+
     protected $queryString = [
         'search'  => ['except' => ''],
         'page'    => ['except' => 1],
@@ -37,6 +44,39 @@ class RevisarQuejas extends PageWithDashboard
         'fEstado' => ['except' => null],
         'fTipo'   => ['except' => null],
     ];
+
+
+    public function mount()
+    {
+        $this->loadSubdirectores();
+    }
+
+    protected function loadSubdirectores(): void
+    {
+        // Usa los mismos slugs que en SolicitudPdfController::subdirectorSlugPorCodigo
+        $slugs = [
+            'subdir-academica',
+            'subdir-vinculacion',
+            'subdir-servicios',
+        ];
+
+        $positions = OrgPosition::with('vigente')
+            ->whereIn('slug', $slugs)
+            ->get();
+
+        $this->subdirectoresLabels = [];
+
+        foreach ($positions as $pos) {
+            $titular = optional($pos->vigente)->nombre;  // PERSONA
+            $puesto = mb_strtoupper($pos->titulo, 'UTF-8');
+
+            if ($titular) {
+                $this->subdirectoresLabels[$pos->slug] = "{$titular} ({$puesto})";
+            } else {
+                $this->subdirectoresLabels[$pos->slug] = "{$puesto} (S/F)";
+            }
+        }
+    }
 
     public function updatingSearch()   { $this->resetPage(); }
     public function updatedFEstado()   { $this->resetPage(); }
@@ -68,6 +108,7 @@ class RevisarQuejas extends PageWithDashboard
         $this->selectedId   = $id;
         $this->showView     = true;
         $this->respuestaText = (string) ($this->selected?->respuesta ?? '');
+        $this->subdirector_slug = $this->selected?->subdirector_slug;
     }
 
     public function sortBy(string $field): void
@@ -109,25 +150,26 @@ class RevisarQuejas extends PageWithDashboard
     /** Guardar respuesta y marcar como respondida */
     public function respond(): void
     {
-        $this->validateOnly('respuestaText');
+        $this->validate([
+            'respuestaText'    => 'required|string|min:5|max:4000',
+            'subdirector_slug' => 'required|string',
+        ], [
+            'subdirector_slug.required' => 'Selecciona el subdirector correspondiente.',
+        ]);
 
         $row = Complaint::findOrFail($this->selectedId);
-        $row->respuesta     = $this->respuestaText;
-        $row->respondida_at = now();
 
-        // Si está abierta o en_proceso, pasamos a respondida
-        if (in_array($row->estado, ['abierta','en_proceso'])) {
+        $row->respuesta        = $this->respuestaText;
+        $row->respondida_at    = now();
+        $row->subdirector_slug = $this->subdirector_slug;
+
+        if (in_array($row->estado, ['abierta', 'en_proceso'])) {
             $row->estado = 'respondida';
         }
 
-        // Si quieres registrar quién respondió (si tienes columna), descomenta y ajusta:
-        // $row->respondida_por = Auth::id();
-
         $row->save();
 
-        // Cerrar modal y refrescar
         $this->closeView();
-        // $this->dispatch('toast', type: 'success', message: 'Respuesta enviada');
     }
 
     /** Cerrar definitivamente (opcional) */
